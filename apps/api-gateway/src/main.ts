@@ -1,7 +1,7 @@
 import * as path from 'path'
 import express from 'express'
-import swaggerUi from 'swagger-ui-express'
 import proxy from 'express-http-proxy'
+import swaggerUi from 'swagger-ui-express'
 import axios from 'axios'
 import cors from 'cors'
 import morgan from 'morgan'
@@ -35,9 +35,6 @@ const limiter = rateLimit({
 })
 
 app.use(limiter)
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')))
-
 app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to api-gateway!' })
 })
