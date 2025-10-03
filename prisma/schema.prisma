@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -19,7 +18,7 @@ model images {
   file_id   String
   url       String
   userId    String?  @unique @db.ObjectId
-  users     users? @relation(fields: [userId], references: [id])
+  users     users?   @relation(fields: [userId], references: [id])
 }
 
 model users {
