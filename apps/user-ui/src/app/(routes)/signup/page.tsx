@@ -162,7 +162,7 @@ const Signup = () => {
                                 </label>
                             </div>
                             {errors.name && (
-                                <p className="text-red-500 font-medium">
+                                <p className="mt-2 text-red-500 font-medium">
                                     {String(errors.name.message)}
                                 </p>
                             )}
@@ -190,7 +190,7 @@ const Signup = () => {
                                 </label>
                             </div>
                             {errors.email && (
-                                <p className="text-red-500 font-medium">
+                                <p className="mt-2 text-red-500 font-medium">
                                     {String(errors.email.message)}
                                 </p>
                             )}
@@ -224,7 +224,7 @@ const Signup = () => {
                                 </button>
                             </div>
                             {errors.password && (
-                                <p className="text-red-500 font-medium">
+                                <p className="mt-2 text-red-500 font-medium">
                                     {String(errors.password.message)}
                                 </p>
                             )}
@@ -241,7 +241,7 @@ const Signup = () => {
                                 {
                                     signupMutation?.isError &&
                                     signupMutation.error instanceof AxiosError && (
-                                        <p className="my-4 text-red-500 font-medium text-center">
+                                        <p className="my-4 mt-2 text-red-500 font-medium text-center">
                                             {signupMutation.error.response?.data?.message || 'Something went wrong'}
                                         </p>
                                     )
@@ -282,7 +282,7 @@ const Signup = () => {
                             {
                                 verifyOtpMutation?.isError && 
                                 verifyOtpMutation?.error instanceof AxiosError && (
-                                    <p className="my-4 text-red-500 font-medium text-center">
+                                    <p className="my-4 mt-2 text-red-500 font-medium text-center">
                                         {verifyOtpMutation?.error?.response?.data?.message || 'Something went wrong'}
                                     </p>
                                 )

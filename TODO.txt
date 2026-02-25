@@ -1,4 +1,4 @@
-6 34 20
+6 53 36
 
 
 npx create-nx-workspace@20.6.1 .
@@ -7,3 +7,5 @@ npx nx g @nx/express:app api-gateway --directory=apps/api-gateway --e2eTestRunne
 
 Redis -> https://upstash.com
 
+
+fix login at header & sub

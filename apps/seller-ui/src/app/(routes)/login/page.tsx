@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
-import GoogleButton from 'apps/user-ui/src/shared/components/google-button'
 import Link from 'next/link'
 
 
@@ -52,7 +51,7 @@ const Login = () => {
     }
 
     return (
-        <div className="w-full py-10 min-h-[85vh] bg-[#F1F1F1]">
+        <div className="w-full py-10 min-h-screen bg-[#F1F1F1]">
             <h1 className="text-3xl font-poppins font-semibold text-black text-center">
                 Login
             </h1>
@@ -64,7 +63,6 @@ const Login = () => {
                     <h3 className="text-3xl font-semibold text-center mb-5">
                         Login to your account
                     </h3>
-                    <GoogleButton />
                     <div className="flex items-center my-5 text-slate-400 text-sm">
                         <div className="flex-1 border-t border-slate-300" />
                             <span className="px-3">or</span>
