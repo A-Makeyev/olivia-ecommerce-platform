@@ -1,4 +1,4 @@
-6 53 36
+7 10 11
 
 
 npx create-nx-workspace@20.6.1 .
@@ -6,6 +6,8 @@ npx nx add @nx/express
 npx nx g @nx/express:app api-gateway --directory=apps/api-gateway --e2eTestRunner=none
 
 Redis -> https://upstash.com
+
+winget install --id Google.Antigravity --force
 
 
 fix login at header & sub
