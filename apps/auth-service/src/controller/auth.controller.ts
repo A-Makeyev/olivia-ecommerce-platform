@@ -31,7 +31,7 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
         await sendOtp(name, email, 'user-activation-email')
 
         res.status(200).json({
-            message: `OTP sent to ${email} for account activation`
+            message: `OTP sent to ${email} for account verification`
         })
     } catch (err) {
         return next(err)
@@ -209,6 +209,29 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
         res.status(200).json({
             message: 'Password reset successful'
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
+
+export const sellerRegistration = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        validateRegistrationData(req.body, 'seller')
+
+        const { name, email } = req.body
+        const seller = await prisma.sellers.findUnique({ where: { email } })
+
+        if (seller) {
+            return new ValidationError(`${email} is already registered`)
+        }
+
+        await checkOtpRestrictions(email)
+        await trackOtpRequest(email)
+        await sendOtp(name, email, 'seller-activation-email')
+
+        res.status(200).json({
+            message: `OTP sent to ${email} for account verification`
         })
     } catch (err) {
         return next(err)

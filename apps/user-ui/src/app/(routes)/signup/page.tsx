@@ -235,7 +235,7 @@ const Signup = () => {
                                 {signupMutation.isPending ? (
                                     <Loader2 size={28} className="animate-spin mr-2" />
                                 ) : (
-                                    'Sign up'
+                                    'Register'
                                 )}
                             </button>
                                 {

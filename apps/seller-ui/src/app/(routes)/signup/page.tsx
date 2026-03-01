@@ -311,17 +311,17 @@ const Signup = () => {
                                     {signupMutation.isPending ? (
                                         <Loader2 size={28} className="animate-spin mr-2" />
                                     ) : (
-                                        'Sign up'
+                                        'Register'
                                     )}
                                 </button>
-                                    {
-                                        signupMutation?.isError &&
-                                        signupMutation.error instanceof AxiosError && (
-                                            <p className="my-4 mt-2 text-red-500 font-medium text-center">
-                                                {signupMutation.error.response?.data?.message || 'Something went wrong'}
-                                            </p>
-                                        )
-                                    }
+                                {
+                                    signupMutation?.isError &&
+                                    signupMutation.error instanceof AxiosError && (
+                                        <p className="my-4 mt-2 text-red-500 font-medium text-center">
+                                            {signupMutation.error.response?.data?.message || 'Something went wrong'}
+                                        </p>
+                                    )
+                                }
                                 <div className="flex justify-center mt-4">
                                     <p className="text-center text-[#00000099] font-semibold">
                                         Already have an account? {' '}
@@ -374,7 +374,7 @@ const Signup = () => {
                                 <p className="my-4 text-center text-sm font-medium">
                                     { canResend ? (
                                         <button onClick={handleResendOtp} className="cursor-pointer text-slate-900 hover:text-slate-700 transition">
-                                            Send new code
+                                            Send New Code
                                         </button>
                                     ) : (
                                         `Resend code in ${timer} seconds`
