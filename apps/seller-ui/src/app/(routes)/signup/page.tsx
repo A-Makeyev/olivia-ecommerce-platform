@@ -19,7 +19,8 @@ const Signup = () => {
     const [showOtp, setShowOtp] = useState(false)
     const [canResend, setCanResend] = useState(true)
     const [passwordVisible, setPasswordVisible] = useState(false)
-    const [userData, setUserData] = useState<FormData | null>(null)
+    const [sellerData, setSellerData] = useState<FormData | null>(null)
+    const [sellerId, setSellerId] = useState('')
     const [isCountryFocused, setIsCountryFocused] = useState(false)
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
     
@@ -46,11 +47,11 @@ const Signup = () => {
     
     const signupMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user-registration`, data)
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-registration`, data)
             return response.data
         },
         onSuccess: (_, formData) => {
-            setUserData(formData)
+            setSellerData(formData)
             setShowOtp(true)
             setCanResend(false)
             setTimer(60)
@@ -65,18 +66,19 @@ const Signup = () => {
 
     const verifyOtpMutation = useMutation({
         mutationFn: async() => {
-            if (!userData) return
+            if (!sellerData) return
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user-verification`,
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-verification`,
                 {
-                    ...userData,
+                    ...sellerData,
                     otp: otp.join('')
                 }
             )
             return response.data
         },
-        onSuccess: () => {
-            router.push('/login')
+        onSuccess: (data) => {
+            setSellerId(data?.seller?.id)
+            setActiveStep(2)
         },
         onError: (error: AxiosError<{message?: string}>) => {
             const errorMessage = error.response?.data?.message || 'Something went wrong'
@@ -113,8 +115,8 @@ const Signup = () => {
     }
 
     const handleResendOtp = () => {
-        if (userData) {
-            signupMutation.mutate(userData)
+        if (sellerData) {
+            signupMutation.mutate(sellerData)
         }
     }
 
