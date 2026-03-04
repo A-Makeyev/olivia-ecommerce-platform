@@ -1,32 +1,24 @@
-import React from "react";
+import React, { SVGProps } from 'react';
 
+interface StripeSymbolProps extends SVGProps<SVGSVGElement> {}
 
-interface CartIconProps extends React.SVGProps<SVGSVGElement> {
-  size?: number | string;
-  color?: string;
-}
-
-const CartIcon: React.FC<CartIconProps> = ({ 
-  size = 24, 
-  color = "currentColor", 
+export const StripeSymbol: React.FC<StripeSymbolProps> = ({ 
+  width = 24, 
+  height = 24, 
   ...props 
-}) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke={color}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <circle cx="9" cy="21" r="1" />
-    <circle cx="20" cy="21" r="1" />
-    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-  </svg>
-);
-
-export default CartIcon;
+}) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Stripe Symbol"
+      role="img"
+      {...props}
+    >
+      <path d="M13.98 10.89c0-1.65-1.36-2.45-3.38-2.45-1.84 0-3.06.89-3.06 2.24 0 1.52 1.33 2.21 3.22 2.65 2.39.56 3.56 1.61 3.56 3.35 0 2.09-1.66 3.32-4.22 3.32-2.47 0-4.28-1.14-4.44-3.03h2.66c.13 1.05 1.03 1.68 2.53 1.68 1.65 0 2.64-.78 2.64-1.96 0-1.42-1.23-2.1-3.14-2.54-2.45-.56-3.67-1.66-3.67-3.43 0-2.03 1.64-3.28 4.1-3.28 2.33 0 3.96 1.09 4.2 2.89h-2.66c-.11-.92-.86-1.54-2.24-1.54-1.48 0-2.37.71-2.37 1.79 0 1.28 1.17 1.92 3.08 2.36 2.52.58 3.77 1.69 3.77 3.55 0 2.22-1.73 3.5-4.42 3.5-2.61 0-4.45-1.23-4.7-3.22h2.71c.17 1.13 1.12 1.87 2.71 1.87 1.71 0 2.73-.81 2.73-2.07 0-1.54-1.31-2.24-3.31-2.69-2.33-.53-3.48-1.58-3.48-3.26 0-2.01 1.58-3.22 4.04-3.22 2.39 0 4.09 1.17 4.33 3.06h-2.66z" />
+    </svg>
+  );
+};

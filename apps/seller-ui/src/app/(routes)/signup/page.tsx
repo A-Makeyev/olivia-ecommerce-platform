@@ -7,13 +7,15 @@ import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff, Mail, Lock, UserPen, Loader2, Phone, Globe, ChevronDown } from 'lucide-react'
 import { countries } from 'apps/seller-ui/src/utils/countries'
 import axios, { AxiosError } from 'axios'
+import CreateShop from 'apps/seller-ui/src/shared/modules/auth/create-shop'
+import StripeIcon from 'apps/seller-ui/src/assets/svgs/stripe-icon'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 
 const Signup = () => {
     const router = useRouter()
-    const [activeStep, setActiveStep] = useState(1)
+    const [activeStep, setActiveStep] = useState(3)
     const [timer, setTimer] = useState(60)
     const [otp, setOtp] = useState(['', '', '', ''])
     const [showOtp, setShowOtp] = useState(false)
@@ -118,6 +120,10 @@ const Signup = () => {
         if (sellerData) {
             signupMutation.mutate(sellerData)
         }
+    }
+
+    const connectStripe = () => {
+        
     }
 
     return (
@@ -241,7 +247,7 @@ const Signup = () => {
                                         onBlur={() => setIsCountryFocused(false)}
                                         onChange={(e) => {
                                             register("country").onChange(e);
-                                            (e.target as HTMLSelectElement).blur();
+                                            (e.target as HTMLSelectElement).blur()
                                         }}
                                     >
                                         <option value="" disabled hidden></option>
@@ -357,7 +363,7 @@ const Signup = () => {
                                 <button 
                                     disabled={verifyOtpMutation.isPending || !otp.every(digit => digit !== '')}
                                     onClick={() => verifyOtpMutation.mutate()}
-                                    className="w-full text-lg mt-6 py-2 rounded-lg cursor-pointer bg-black text-white flex justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:enabled:bg-gray-800 transition"
+                                    className="w-full text-lg mt-6 py-2 rounded-lg bg-black text-white flex justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:enabled:bg-gray-800 transition"
                                 >
                                     {verifyOtpMutation.isPending ? (
                                         <Loader2 size={28} className="animate-spin mr-2" />
@@ -375,7 +381,7 @@ const Signup = () => {
                                 }
                                 <p className="my-4 text-center text-sm font-medium">
                                     { canResend ? (
-                                        <button onClick={handleResendOtp} className="cursor-pointer text-slate-900 hover:text-slate-700 transition">
+                                        <button onClick={handleResendOtp} className="text-slate-900 hover:text-slate-700 transition">
                                             Send New Code
                                         </button>
                                     ) : (
@@ -385,6 +391,23 @@ const Signup = () => {
                             </div>
                         )}
                     </>
+                )}
+                {activeStep === 2 && (
+                    <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+                )}
+                {activeStep === 3 && (
+                    <div className="text-center">
+                        <h3 className="text-2xl font-semibold">
+                            Payment Method
+                        </h3>
+                        <br />
+                        <button 
+                            onClick={connectStripe}
+                            className="w-full m-auto flex items-center justify-center gap-3 py-2 text-lg rounded-lg bg-black text-white hover:bg-gray-800 transition"
+                        >
+                            <StripeIcon /> Connect Stripe
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
