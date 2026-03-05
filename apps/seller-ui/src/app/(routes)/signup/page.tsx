@@ -15,7 +15,7 @@ import Link from 'next/link'
 
 const Signup = () => {
     const router = useRouter()
-    const [activeStep, setActiveStep] = useState(3)
+    const [activeStep, setActiveStep] = useState(1)
     const [timer, setTimer] = useState(60)
     const [otp, setOtp] = useState(['', '', '', ''])
     const [showOtp, setShowOtp] = useState(false)
@@ -81,6 +81,7 @@ const Signup = () => {
         onSuccess: (data) => {
             setSellerId(data?.seller?.id)
             setActiveStep(2)
+            toast.success('Verification successful')
         },
         onError: (error: AxiosError<{message?: string}>) => {
             const errorMessage = error.response?.data?.message || 'Something went wrong'
@@ -122,9 +123,23 @@ const Signup = () => {
         }
     }
 
-    const connectStripe = () => {
-        
-    }
+    const connectStripeMutation = useMutation({
+        mutationFn: async () => {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/create-stripe-connect-link`, {
+                sellerId
+            })
+            return response.data
+        },
+        onSuccess: (data) => {
+            if (data.url) {
+                window.location.href = data.url
+            }
+        },
+        onError: (error: AxiosError<{message?: string}>) => {
+            const errorMessage = error.response?.data?.message || 'Something went wrong'
+            toast.error(errorMessage)
+        }
+    })
 
     return (
         <div className="w-full flex flex-col items-center pt-10 min-h-screen">
@@ -402,11 +417,26 @@ const Signup = () => {
                         </h3>
                         <br />
                         <button 
-                            onClick={connectStripe}
+                            onClick={() => connectStripeMutation.mutate()}
                             className="w-full m-auto flex items-center justify-center gap-3 py-2 text-lg rounded-lg bg-black text-white hover:bg-gray-800 transition"
                         >
-                            <StripeIcon /> Connect Stripe
+                            {connectStripeMutation.isPending ? (
+                                <Loader2 size={28} className="animate-spin mr-2" />
+                            ) : (
+                                <>
+                                    <StripeIcon /> 
+                                    Connect Stripe
+                                </>
+                            )}
                         </button>
+                        {
+                            connectStripeMutation.isError &&
+                            connectStripeMutation.error instanceof AxiosError && (
+                                <p className="my-4 mt-2 text-red-500 font-medium text-center">
+                                    {connectStripeMutation.error.response?.data?.message || 'Something went wrong'}
+                                </p>
+                            )
+                        }
                     </div>
                 )}
             </div>

@@ -19,7 +19,7 @@ const CreateShop = ({
     const { 
         register, 
         handleSubmit, 
-        formState: { errors, isValid, isSubmitting } 
+        formState: { errors, isValid } 
     } = useForm({
         mode: 'onChange'
     })
@@ -211,10 +211,10 @@ const CreateShop = ({
                 </div>
                 <button 
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={createShopMutation.isPending}
                     className="w-full text-lg mt-6 py-2 rounded-lg cursor-pointer bg-black text-white flex justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:enabled:bg-gray-800 transition"
                 >
-                    {isSubmitting ? (
+                    {createShopMutation.isPending ? (
                         <Loader2 size={28} className="animate-spin mr-2" />
                     ) : (
                         'Create'

@@ -30,7 +30,7 @@ const Login = () => {
     
     const loginMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user-login`, 
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-login`, 
                 data, 
                 { withCredentials: true }
             )
@@ -60,14 +60,9 @@ const Login = () => {
             </p>
             <div className="w-full flex justify-center">
                 <div className="md:w-[480px] p-8 bg-white rounded-lg shadow-lg">
-                    <h3 className="text-3xl font-semibold text-center mb-5">
+                    <h3 className="text-3xl font-semibold text-center mb-10">
                         Login to your account
                     </h3>
-                    <div className="flex items-center my-5 text-slate-400 text-sm">
-                        <div className="flex-1 border-t border-slate-300" />
-                            <span className="px-3">or</span>
-                        <div className="flex-1 border-t border-slate-300" />
-                    </div>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="relative mt-4">
                             <div className="absolute top-2.5 left-3 text-slate-500 pointer-events-none">

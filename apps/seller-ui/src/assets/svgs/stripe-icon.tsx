@@ -7,7 +7,7 @@ interface StripeBadgeProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const StripeBadge: React.FC<StripeBadgeProps> = ({ 
-  size = 25, 
+  size = 20, 
   rounded = 5, 
   ...props 
 }) => (

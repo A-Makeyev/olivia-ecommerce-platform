@@ -10,8 +10,12 @@ import {
     verifyUserForgotPassword, 
     sellerRegistration,
     sellerVerification,
-    createShop
+    sellerLogin,
+    getSeller,
+    createShop,
+    createStripeConnectLink,
 } from "../controller/auth.controller"
+import { isSeller } from "@packages/middleware/authorize-roles"
 import isAuthenticated from "@packages/middleware/is-authenticated"
 
 
@@ -28,8 +32,11 @@ router.post('/reset-password', resetPassword)
 
 router.post('/seller-registration', sellerRegistration)
 router.post('/seller-verification', sellerVerification)
+router.post('/seller-login', sellerLogin)
 router.post('/create-shop', createShop)
+router.post('/create-stripe-connect-link', createStripeConnectLink)
 
+router.get('/get-seller', isAuthenticated, isSeller, getSeller)
 router.get('/authenticate-user', isAuthenticated, getUser)
 
 export default router

@@ -13,7 +13,12 @@ import {
     verifyForgotPasswordOtp,
     verifyOtp
 } from "../utils/auth.helper"
+import Stripe from "stripe"
 
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-02-25.clover'
+})
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -163,7 +168,7 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
     try {
         const user = req.user
 
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             user
         })
@@ -223,7 +228,7 @@ export const sellerRegistration = async (req: Request, res: Response, next: Next
         const existingSeller = await prisma.sellers.findUnique({ where: { email } })
 
         if (existingSeller) {
-            return new ValidationError(`${email} is already registered`)
+            return next(new ValidationError('Email is already in use'))
         }
 
         await checkOtpRestrictions(email)
@@ -249,7 +254,7 @@ export const sellerVerification = async (req: Request, res: Response, next: Next
         const existingSeller = await prisma.sellers.findUnique({ where: { email } })
 
         if (existingSeller) {
-            return next(new ValidationError(`${email} is already registered`))
+            return next(new ValidationError('Email is already in use'))
         }
 
         await verifyOtp(email, otp)
@@ -309,3 +314,107 @@ export const createShop = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+export const createStripeConnectLink = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { sellerId } = req.body
+
+        if (!sellerId) {
+            return next(new ValidationError('Seller ID is required'))
+        }
+
+        const seller = await prisma.sellers.findUnique({ where: { id: sellerId } })
+
+        if (!seller) {
+            return next(new ValidationError('Seller not found'))
+        }
+
+        const account = await stripe.accounts.create({
+            type: 'express',
+            email: seller?.email,
+            country: seller?.country,
+            capabilities: {
+                card_payments: { requested: true },
+                transfers: { requested: true },
+            },
+        })
+
+        await prisma.sellers.update({
+            where: { id: sellerId },
+            data: { stripeId: account.id }
+        })
+
+        const accountLink = await stripe.accountLinks.create({
+            account: account.id,
+            refresh_url: `http://localhost:3000/success`,
+            return_url: `http://localhost:3000/success`,
+            type: 'account_onboarding',
+        })
+
+        res.status(200).json({
+            message: 'Stripe account created successfully',
+            url: accountLink.url
+        })
+
+    } catch (err) {
+        return next(err)
+    }
+}
+
+export const sellerLogin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body
+
+        if (!email || !password) {
+            return next(new ValidationError('Email and password are required'))
+        }
+
+        const seller = await prisma.sellers.findUnique({ where: { email } })
+
+        if (!seller) {
+            return next(new ValidationError('Invalid email or password'))
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, seller.password!)
+
+        if (!isPasswordValid) {
+            return next(new ValidationError('Invalid email or password'))
+        }
+
+        const accessToken = jwt.sign({
+            id: seller.id,
+            role: 'seller'
+        }, process.env.ACCESS_TOKEN as string, { expiresIn: '15m' })
+
+        const refreshToken = jwt.sign({
+            id: seller.id,
+            role: 'seller'
+        }, process.env.REFRESH_TOKEN as string, { expiresIn: '7d' })
+
+        setCookie(res, 'seller_access_token', accessToken)
+        setCookie(res, 'seller_refresh_token', refreshToken)
+
+        res.status(200).json({
+            message: 'Login successful',
+            seller: {
+                id: seller.id,
+                name: seller.name,
+                email: seller.email
+            }
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
+
+export const getSeller = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const seller = req.seller
+
+        res.status(200).json({
+            success: true,
+            seller
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
