@@ -2,7 +2,7 @@ import React, { SVGProps } from 'react';
 
 interface StripeSymbolProps extends SVGProps<SVGSVGElement> {}
 
-export const StripeSymbol: React.FC<StripeSymbolProps> = ({ 
+const CartIcon: React.FC<StripeSymbolProps> = ({ 
   width = 24, 
   height = 24, 
   ...props 
@@ -22,3 +22,5 @@ export const StripeSymbol: React.FC<StripeSymbolProps> = ({
     </svg>
   );
 };
+
+export default CartIcon;

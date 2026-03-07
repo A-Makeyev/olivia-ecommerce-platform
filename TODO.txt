@@ -1,4 +1,4 @@
-8 27 58
+8 46 25
 
 
 npx create-nx-workspace@20.6.1 .

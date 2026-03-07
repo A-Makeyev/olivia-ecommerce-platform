@@ -36,7 +36,7 @@ router.post('/seller-login', sellerLogin)
 router.post('/create-shop', createShop)
 router.post('/create-stripe-connect-link', createStripeConnectLink)
 
-router.get('/get-seller', isAuthenticated, isSeller, getSeller)
+router.get('/authenticate-seller', isAuthenticated, isSeller, getSeller)
 router.get('/authenticate-user', isAuthenticated, getUser)
 
 export default router

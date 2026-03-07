@@ -1,12 +1,13 @@
 'use client'
 
 import { Loader2, Search } from 'lucide-react'
-import Link from 'next/link'
+import CartIcon from '../../assets/svgs/cart-icon'
 import ProfileIcon from '../../assets/svgs/profile-icon'
 import HeartIcon from '../../assets/svgs/heart-icon'
-import CartIcon from '../../assets/svgs/cart-icon'
 import HeaderBottom from '../sub-header'
 import useUser from 'apps/user-ui/src/hooks/use-user'
+import Link from 'next/link'
+
 
 const Header = () => {
     const { user, isLoading, isError, refetch } = useUser()

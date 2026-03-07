@@ -22,15 +22,15 @@ export const validateRegistrationData = (data: any, userType: 'user' | 'seller')
 
 export const checkOtpRestrictions = async (email: string) => {
     if (await redis.get(`otp_lock:${email}`)) {
-        throw new ValidationError('Account locked due to multiple attempts, please try again in 30 minutes')
+        throw new ValidationError('Account locked due to multiple attempts, try again in 30 minutes')
     }
 
     if (await redis.get(`otp_spam_lock:${email}`)) {
-        throw new ValidationError('Too many OTP requests, please try again in 1 hour')
+        throw new ValidationError('Too many OTP requests, try again in 1 hour')
     }
 
     if (await redis.get(`otp_cooldown:${email}`)) {
-        throw new ValidationError('Please wait 1 minute before requesting another OTP')
+        throw new ValidationError('Wait 1 minute before requesting another OTP')
     }
 }
 
