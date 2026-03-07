@@ -6,7 +6,7 @@ import ProfileIcon from '../../assets/svgs/profile-icon'
 import HeartIcon from '../../assets/svgs/heart-icon'
 import CartIcon from '../../assets/svgs/cart-icon'
 import HeaderBottom from '../sub-header'
-import useUser from 'apps/user-ui/src/hooks/useUser'
+import useUser from 'apps/user-ui/src/hooks/use-user'
 
 const Header = () => {
     const { user, isLoading, isError, refetch } = useUser()

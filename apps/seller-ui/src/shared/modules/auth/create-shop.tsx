@@ -10,7 +10,7 @@ import { useState } from 'react'
 const CreateShop = ({
     sellerId, 
     setActiveStep
-} : {
+}: {
     sellerId: string,
     setActiveStep: (step: number) => void}
 ) => {

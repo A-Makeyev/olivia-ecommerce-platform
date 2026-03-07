@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { navItems } from '../configs/constants'
+import { navItems } from '../config/constants'
 import { AlignLeft, ChevronDown, Search } from 'lucide-react'
 import Link from 'next/link'
 import ProfileIcon from '../assets/svgs/profile-icon'
 import CartIcon from '../assets/svgs/cart-icon'
 import HeartIcon from '../assets/svgs/heart-icon'
-import useUser from 'apps/user-ui/src/hooks/useUser'
+import useUser from 'apps/user-ui/src/hooks/use-user'
 
 
 const HeaderBottom = () => {
