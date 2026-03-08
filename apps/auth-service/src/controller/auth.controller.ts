@@ -380,7 +380,7 @@ export const sellerLogin = async (req: Request, res: Response, next: NextFunctio
             return next(new ValidationError('Email and password are required'))
         }
 
-        const seller = await prisma.sellers.findUnique({ where: { email } })
+        const seller = await prisma.sellers.findUnique({ where: { email }, include: { shop: true } })
 
         if (!seller) {
             return next(new ValidationError('Invalid email or password'))
