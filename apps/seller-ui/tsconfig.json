@@ -25,10 +25,11 @@
       ]
     },
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
+    "../../packages/**/*.tsx",
     "../../apps/seller-ui/.next/types/**/*.ts",
     "../../dist/apps/seller-ui/.next/types/**/*.ts",
     "next-env.d.ts",

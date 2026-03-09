@@ -26,7 +26,7 @@ const SidebarWrapper = () => {
     }, [pathName, setActiveSidebar])
 
     return (    
-        <Box css={{ 
+        <Box $css={{ 
             top: "0",
             height: "100vh", 
             position: "sticky",
@@ -113,7 +113,7 @@ const SidebarWrapper = () => {
                                 icon={<TicketPercent color={getIconColor('/dashboard/discount-codes')} />}
                             />
                         </SidebarMenu>
-                        <SidebarMenu title="Contact">
+                        <SidebarMenu title="Account">
                             <SidebarItem 
                                 title="Inbox"
                                 href="/dashboard/inbox"
@@ -126,8 +126,6 @@ const SidebarWrapper = () => {
                                 isActive={activeSidebar === '/dashboard/notifications'}
                                 icon={<Bell color={getIconColor('/dashboard/notifications')} />}
                             />
-                        </SidebarMenu>
-                        <SidebarMenu title="General">
                             <SidebarItem 
                                 title="Settings"
                                 href="/dashboard/settings"
