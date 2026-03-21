@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ChevronRight, Package } from 'lucide-react'
+import { ChevronRight, ClipboardPen, Package } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import Input from 'packages/components/input'
 
@@ -80,7 +80,7 @@ const Page = () => {
                             index={0}
                         />
                     )}
-                    <div className="w-[45%] grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 py-4">
                         {images.slice(1).map((_, index) => (
                             <ImagePlaceholder 
                                 small
@@ -100,7 +100,27 @@ const Page = () => {
                                 label="Product Title" 
                                 icon={<Package size={20} />}
                                 placeholder="Product Title" 
+                                error={errors.title?.message as string}
                                 {...register('title', { required: 'Product title is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="flex w-full gap-6">
+                        <div className="w-2/4">
+                            <Input 
+                                type="textarea"
+
+                                label="Product Description" 
+                                icon={<ClipboardPen size={20} />}
+                                placeholder="Product Description" 
+                                error={errors.description?.message as string}
+                                {...register('description', { 
+                                    required: 'Product description is required', 
+                                    validate: (value) => {
+                                        const words = value.trim().split(/\s+/).length
+                                        return words <= 150 || `Description must be less than 150 words. Current: ${words}`
+                                    }
+                                })} 
                             />
                         </div>
                     </div>

@@ -21,6 +21,8 @@ const SidebarWrapper = () => {
     const { seller, isLoading } = useSeller()
     const getIconColor = (route: string) => activeSidebar === route ? '#FFFFFF' : '#969696'
 
+    const capitalize = (str: string) => str ? str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : ''
+
     useEffect(() => {
         setActiveSidebar(pathName)
     }, [pathName, setActiveSidebar])
@@ -46,11 +48,11 @@ const SidebarWrapper = () => {
                                  {isLoading ? (
                                      <div className="w-32 h-6 bg-slate-700 animate-pulse rounded-md" />
                                  ) : (
-                                     seller?.shop?.name
+                                     capitalize(seller?.shop?.name)
                                  )}
                              </h3>
                              <h5 className="text-xs font-medium max-w-[170px] text-[#ECEDEECF] whitespace-nowrap overflow-hidden text-ellipsis">
-                                {seller?.shop?.address}
+                                {capitalize(seller?.shop?.address)}
                              </h5>
                         </Box>
                    </Link>

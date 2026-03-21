@@ -82,7 +82,10 @@ const CreateShop = ({
                         className="w-full p-2 pl-10 outline-0 rounded-lg border border-slate-400 peer placeholder-transparent" 
                         { ...register('bio', {
                             required: 'Bio is required',
-                            validate: (value) => value.trim() !== '' && value.trim().split(/\s+/).length <= 100 || 'Bio must be less than 100 words'
+                            validate: (value) => {
+                                const words = value.trim().split(/\s+/).length
+                                return words <= 100 || `Bio must be less than 100 words. Current: ${words}`
+                            }
                         })}
                     />  
                     <label className="absolute left-10 -top-2.5 bg-white px-1 text-sm text-slate-500 transition-all 

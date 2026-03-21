@@ -17,36 +17,39 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
     ({ label, type = "text", className, icon, error, ...props }, ref) => {
         const inputBaseStyle = 
         `
-            ${icon ? 'pl-10' : 'pl-3'} ${error ? 'border-red-500' : 'border-slate-400'} w-full p-2 outline-0  
-            rounded-lg border transition-all duration-300 ease-out bg-transparent text-white peer placeholder-transparent
+            ${icon ? 'pl-11' : 'pl-4'} ${error ? 'border-red-500' : 'border-slate-400 focus:border-[#80DEEA]'} w-full p-3.5 outline-0  
+            rounded-lg border transition-all duration-300 ease-out bg-transparent text-lg text-white peer placeholder-transparent
         `
 
         const labelStyle = 
         `
-            ${icon ? 'left-10' : 'left-3'}
-            absolute transition-all duration-300 ease-out pointer-events-none top-2 
-            peer-focus:-top-6 peer-focus:left-1 peer-focus:text-sm peer-focus:text-white text-base text-slate-200
-            peer-[:not(:placeholder-shown)]:-top-6 peer-[:not(:placeholder-shown)]:left-1 peer-[:not(:placeholder-shown)]:text-sm
+            ${icon ? 'left-11' : 'left-4'}
+            absolute transition-all duration-300 ease-out pointer-events-none top-4
+            peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white text-lg text-slate-400
+            peer-[:not(:placeholder-shown)]:-top-3 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:text-sm
             peer-[:not(:placeholder-shown)]:text-white
+            bg-black px-1.5
         `
 
         const iconStyle =
         `
-            absolute top-2.5 left-3 text-slate-200 pointer-events-none transition-colors
+            absolute top-[18px] left-4 text-slate-400 pointer-events-none transition-colors
             peer-focus:text-white peer-[:not(:placeholder-shown)]:text-white
         `
 
         return (
             <div className="w-full text-white">
-                <div className="relative mt-2">
+                <div className="relative my-2">
                     {type === 'textarea' ? (
                         <textarea
                             ref={ref as Ref<HTMLTextAreaElement>}
                             placeholder=" "
-                            className={`${inputBaseStyle} ${className}`}
+                            className={`${inputBaseStyle} min-h-[100px] max-h-[250px] resize-y ${className}`}
                             {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)}
                         />
                     ) : (
+
+
                         <input
                             type={type}
                             ref={ref as Ref<HTMLInputElement>}
