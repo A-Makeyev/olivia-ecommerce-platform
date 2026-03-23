@@ -78,14 +78,17 @@ const ImagePlaceholder = ({
                     className="w-full h-full object-cover rounded-lg"
                 />
             ) : (
-                <div className="flex flex-col items-center justify-center">
+                <label 
+                    htmlFor={`image-upload-${index}`}
+                    className="flex flex-col items-center justify-center w-full h-full rounded-lg cursor-pointer"
+                >
                     <p className={`font-semibold text-slate-400 ${small ? "text-xl" : "text-3xl"}`}>
                         {size}
                     </p>
                     <p className={`text-center p-2 text-slate-500 ${small ? "text-sm" : "text-medium"}`}>
                         Choose an image 
                     </p>
-                </div>
+                </label>
             )}
         </div>
     )

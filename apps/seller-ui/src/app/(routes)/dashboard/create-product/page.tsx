@@ -6,6 +6,7 @@ import { ChevronRight, ClipboardPen, Clock, Link, Package, Tag } from 'lucide-re
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import Input from 'packages/components/input'
 import ColorSelector from 'packages/components/color-selector'
+import CustomSpecifications from 'packages/components/custom-specifications'
 
 
 const Page = () => {
@@ -94,9 +95,9 @@ const Page = () => {
                         ))}
                     </div>
                 </div>
-                <div className="md:w-[65%]">
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
+                <div className="md:w-[65%] space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
                             <Input 
                                 label="Product Title" 
                                 icon={<Package size={20} />}
@@ -105,51 +106,9 @@ const Page = () => {
                                 {...register('title', { required: 'Product title is required' })} 
                             />
                         </div>
-                    </div>
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
+                        <div className="col-span-2 md:col-span-1">
                             <Input 
-                                label="Tags" 
-                                icon={<Tag size={20} />}
-                                placeholder="Product Tags" 
-                                error={errors.tags?.message as string}
-                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
-                            />
-                        </div>
-                    </div>
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
-                            <Input 
-                                type="textarea"
-                                label="Product Description" 
-                                icon={<ClipboardPen size={20} />}
-                                placeholder="Product Description" 
-                                error={errors.description?.message as string}
-                                {...register('description', { 
-                                    required: 'Product description is required', 
-                                    validate: (value) => {
-                                        const words = value.trim().split(/\s+/).length
-                                        return words <= 150 || `Description must be less than 150 words. Current: ${words}`
-                                    }
-                                })} 
-                            />
-                        </div>
-                    </div>
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
-                            <Input 
-                                label="Warranty" 
-                                icon={<Clock size={20} />}
-                                placeholder="Warranty" 
-                                error={errors.warranty?.message as string}
-                                {...register('warranty', { required: 'Warranty is required' })} 
-                            />
-                        </div>
-                    </div>
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
-                            <Input 
-                                label="Slug" 
+                                label="Product URL (Slug)" 
                                 icon={<Link size={20} />}
                                 placeholder="Product Slug" 
                                 error={errors.slug?.message as string}
@@ -171,8 +130,8 @@ const Page = () => {
                             />
                         </div>
                     </div>
-                    <div className="flex w-full gap-6">
-                        <div className="w-2/4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
                             <Input 
                                 label="Brand" 
                                 icon={<Tag size={20} />}
@@ -181,9 +140,48 @@ const Page = () => {
                                 {...register('brand', { required: 'Brand is required' })} 
                             />
                         </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                label="Tags (comma separated)" 
+                                icon={<Tag size={20} />}
+                                placeholder="Product Tags" 
+                                error={errors.tags?.message as string}
+                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
+                            />
+                        </div>
                     </div>
-                    <div className="my-2">
+                    <div className="w-full">
+                        <Input 
+                            type="textarea"
+                            label="Product Description" 
+                            icon={<ClipboardPen size={20} />}
+                            placeholder="Product Description" 
+                            error={errors.description?.message as string}
+                            {...register('description', { 
+                                required: 'Product description is required', 
+                                validate: (value) => {
+                                    const words = value.trim().split(/\s+/).length
+                                    return words <= 150 || `Description must be less than 150 words. Current: ${words}`
+                                }
+                            })} 
+                        />
+                    </div>
+                    <div className="flex w-full gap-4">
+                        <div className="w-full md:w-1/2">
+                            <Input 
+                                label="Warranty" 
+                                icon={<Clock size={20} />}
+                                placeholder="Warranty" 
+                                error={errors.warranty?.message as string}
+                                {...register('warranty', { required: 'Warranty is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-700/50">
                         <ColorSelector control={control} errors={errors} />  
+                    </div>
+                    <div className="pt-2 border-t border-slate-700/50">
+                        <CustomSpecifications control={control} errors={errors} /> 
                     </div>
                 </div>
             </div>
