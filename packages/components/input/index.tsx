@@ -33,7 +33,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
 
         const iconStyle =
         `
-            absolute top-[18px] left-4 text-slate-400 pointer-events-none transition-colors
+            absolute top-[20px] left-4 text-slate-400 pointer-events-none transition-colors
             peer-focus:text-white peer-[:not(:placeholder-shown)]:text-white
         `
 

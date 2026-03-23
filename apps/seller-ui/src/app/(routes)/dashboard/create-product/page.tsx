@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ChevronRight, ClipboardPen, Package } from 'lucide-react'
+import { ChevronRight, ClipboardPen, Clock, Link, Package, Tag } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import Input from 'packages/components/input'
+import ColorSelector from 'packages/components/color-selector'
 
 
 const Page = () => {
@@ -108,8 +109,18 @@ const Page = () => {
                     <div className="flex w-full gap-6">
                         <div className="w-2/4">
                             <Input 
+                                label="Tags" 
+                                icon={<Tag size={20} />}
+                                placeholder="Product Tags" 
+                                error={errors.tags?.message as string}
+                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="flex w-full gap-6">
+                        <div className="w-2/4">
+                            <Input 
                                 type="textarea"
-
                                 label="Product Description" 
                                 icon={<ClipboardPen size={20} />}
                                 placeholder="Product Description" 
@@ -123,6 +134,56 @@ const Page = () => {
                                 })} 
                             />
                         </div>
+                    </div>
+                    <div className="flex w-full gap-6">
+                        <div className="w-2/4">
+                            <Input 
+                                label="Warranty" 
+                                icon={<Clock size={20} />}
+                                placeholder="Warranty" 
+                                error={errors.warranty?.message as string}
+                                {...register('warranty', { required: 'Warranty is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="flex w-full gap-6">
+                        <div className="w-2/4">
+                            <Input 
+                                label="Slug" 
+                                icon={<Link size={20} />}
+                                placeholder="Product Slug" 
+                                error={errors.slug?.message as string}
+                                {...register('slug', { 
+                                    required: 'Slug is required',
+                                    pattern: {
+                                        value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                                        message: 'Slug must be in lowercase and can only contain letters, numbers, and hyphens'
+                                    },
+                                    minLength: {
+                                        value: 3,
+                                        message: 'Slug must be at least 3 characters long'
+                                    },
+                                    maxLength: {
+                                        value: 50,
+                                        message: 'Slug must be less than 50 characters long'
+                                    }
+                                })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="flex w-full gap-6">
+                        <div className="w-2/4">
+                            <Input 
+                                label="Brand" 
+                                icon={<Tag size={20} />}
+                                placeholder="Product Brand" 
+                                error={errors.brand?.message as string}
+                                {...register('brand', { required: 'Brand is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="my-2">
+                        <ColorSelector control={control} errors={errors} />  
                     </div>
                 </div>
             </div>
