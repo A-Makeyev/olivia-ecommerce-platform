@@ -7,6 +7,7 @@ import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeho
 import Input from 'packages/components/input'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
+import CustomProperties from 'packages/components/custom-properties'
 
 
 const Page = () => {
@@ -182,6 +183,9 @@ const Page = () => {
                     </div>
                     <div className="pt-2 border-t border-slate-700/50">
                         <CustomSpecifications control={control} errors={errors} /> 
+                    </div>
+                    <div className="pt-2 border-t border-slate-700/50">
+                        <CustomProperties control={control} errors={errors} /> 
                     </div>
                 </div>
             </div>
