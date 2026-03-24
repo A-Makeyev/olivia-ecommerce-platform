@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Controller, useFieldArray } from 'react-hook-form'
 import { PlusCircle, Trash2 } from 'lucide-react'
 import Input from '../input'
@@ -8,6 +9,12 @@ const CustomSpecifications = ({ control, errors }: any) => {
         control,
         name: 'custom_specifications'
     })
+
+    useEffect(() => {
+        if (fields.length === 0) {
+            append({ name: '', value: '' })
+        }
+    }, [])
 
     return (
         <div>

@@ -73,14 +73,14 @@ const CustomProperties = ({ control, errors }: any) => {
                                                 title="Add property"
                                             >
                                                 <PlusCircle size={20} />
-                                                <span>Add Property</span>
+                                                <span>Add</span>
                                             </button>
                                         </div>
                                     </div>
                                     {properties.length > 0 && (
                                         <div className="flex flex-col gap-3">
                                             {properties.map((property, index) => (
-                                                <div key={index} className="group border border-slate-700/40 p-3 rounded-xl bg-slate-800/40 hover:border-blue-500/30 transition-all duration-300">
+                                                <div key={index} className="group border border-slate-700/40 w-[450px] p-3 rounded-xl bg-slate-800/40 hover:border-blue-500/30 transition-all duration-300">
                                                     <div className="flex items-center justify-between pb-2 mb-3">
                                                         <div className="flex items-center gap-2">
                                                             <PackageOpen size={16} className="text-blue-400" />
@@ -113,8 +113,7 @@ const CustomProperties = ({ control, errors }: any) => {
                                                             className="h-[32px] px-3 bg-slate-700 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all text-xs flex items-center gap-1.5"
                                                             title="Add value"
                                                         >
-                                                            <PlusCircle size={14} />
-                                                            <span>Add</span>
+                                                            <span>Done</span>
                                                         </button>
                                                     </div>
                                                     <div className="flex flex-wrap gap-2 mt-3">

@@ -100,6 +100,7 @@ const Page = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input 
+                                size="sm"
                                 label="Product Title" 
                                 icon={<Package size={20} />}
                                 placeholder="Product Title" 
@@ -109,6 +110,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <Input 
+                                size="sm"
                                 label="Product URL (Slug)" 
                                 icon={<Link size={20} />}
                                 placeholder="Product Slug" 
@@ -134,6 +136,7 @@ const Page = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input 
+                                size="sm"
                                 label="Brand" 
                                 icon={<Tag size={20} />}
                                 placeholder="Product Brand" 
@@ -143,6 +146,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <Input 
+                                size="sm"
                                 label="Tags (comma separated)" 
                                 icon={<Tag size={20} />}
                                 placeholder="Product Tags" 
@@ -153,6 +157,7 @@ const Page = () => {
                     </div>
                     <div className="w-full">
                         <Input 
+                            size="sm"
                             type="textarea"
                             label="Product Description" 
                             icon={<ClipboardPen size={20} />}
@@ -170,6 +175,7 @@ const Page = () => {
                     <div className="flex w-full gap-4">
                         <div className="w-full md:w-1/2">
                             <Input 
+                                size="sm"
                                 label="Warranty" 
                                 icon={<Clock size={20} />}
                                 placeholder="Warranty" 
