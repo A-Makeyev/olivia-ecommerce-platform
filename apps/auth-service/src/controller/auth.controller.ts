@@ -61,7 +61,7 @@ export const userVerification = async (req: Request, res: Response, next: NextFu
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        await prisma.users.create({
+        const user = await prisma.users.create({
             data: {
                 name,
                 email,
@@ -69,9 +69,23 @@ export const userVerification = async (req: Request, res: Response, next: NextFu
             }
         })
 
+        const accessToken = jwt.sign({
+            id: user.id,
+            role: 'user',
+        }, process.env.ACCESS_TOKEN as string, { expiresIn: '15m' })
+
+        const refreshToken = jwt.sign({
+            id: user.id,
+            role: 'user',
+        }, process.env.REFRESH_TOKEN as string, { expiresIn: '7d' })
+
+        setCookie(res, 'access_token', accessToken)
+        setCookie(res, 'refresh_token', refreshToken)
+
         res.status(201).json({
             message: 'Accout created successfully',
-            success: true
+            success: true,
+            user
         })
     } catch (err) {
         return next(err)
@@ -282,6 +296,19 @@ export const sellerVerification = async (req: Request, res: Response, next: Next
                 country
             }
         })
+
+        const accessToken = jwt.sign({
+            id: seller.id,
+            role: 'seller'
+        }, process.env.ACCESS_TOKEN as string, { expiresIn: '15m' })
+
+        const refreshToken = jwt.sign({
+            id: seller.id,
+            role: 'seller'
+        }, process.env.REFRESH_TOKEN as string, { expiresIn: '7d' })
+
+        setCookie(res, 'seller_access_token', accessToken)
+        setCookie(res, 'seller_refresh_token', refreshToken)
 
         res.status(201).json({
             message: 'Account created successfully',

@@ -7,7 +7,11 @@
     "dev": "npx nx run-many --target=serve --all",
     "auth-docs": "node apps/auth-service/src/swagger.js",
     "ui": "npx nx run-many --target=dev --all --projects=seller-ui",
-    "start": "concurrently \"npm run dev\" \"npm run ui\""
+    "start": "concurrently \"npm run dev\" \"npm run ui\"",
+    "db:seed": "node --loader ts-node/esm prisma/seed.ts",
+    "db:destroy": "node --loader ts-node/esm prisma/seed.ts -d",
+    "db:push": "npx prisma db push",
+    "db:generate": "npx prisma generate"
   },
   "type": "module",
   "private": true,

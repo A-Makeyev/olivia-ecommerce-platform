@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "name": "Alice Wonderland",
+      "email": "test_user@gmail.com",
+      "password": "user_password_123"
+    },
+    {
+      "name": "Bob Builder",
+      "email": "bob@example.com",
+      "password": "user_password_123"
+    },
+    {
+      "name": "Charlie Chaplin",
+      "email": "charlie@example.com",
+      "password": "user_password_123"
+    }
+  ],
+  "sellers": [
+    {
+      "name": "John Tech",
+      "email": "test_seller@gmail.com",
+      "phone_number": "+1234567890",
+      "country": "USA",
+      "password": "seller_password_123"
+    },
+    {
+      "name": "Sarah Fashion",
+      "email": "sarah@boutique.com",
+      "phone_number": "+1987654321",
+      "country": "UK",
+      "password": "seller_password_123"
+    },
+    {
+      "name": "Mike Gadgets",
+      "email": "mike@gadgethub.com",
+      "phone_number": "+1122334455",
+      "country": "Canada",
+      "password": "seller_password_123"
+    }
+  ],
+  "shops": [
+    {
+      "name": "Tech Haven",
+      "bio": "Your one-stop shop for everything tech.",
+      "category": "Electronics",
+      "address": "123 Silicon Valley, CA",
+      "opening_hours": "9 AM - 6 PM",
+      "sellerEmail": "john@techstore.com"
+    },
+    {
+      "name": "Sarah's Boutique",
+      "bio": "Elegant fashion for everyone.",
+      "category": "Fashion",
+      "address": "456 Oxford St, London",
+      "opening_hours": "10 AM - 8 PM",
+      "sellerEmail": "sarah@boutique.com"
+    },
+    {
+      "name": "Gadget Hub",
+      "bio": "Latest gadgets and accessories.",
+      "category": "Accessories",
+      "address": "789 Toronto Way, ON",
+      "opening_hours": "24/7",
+      "sellerEmail": "mike@gadgethub.com"
+    }
+  ]
+}
