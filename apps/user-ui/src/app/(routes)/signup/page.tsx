@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff, Mail, Lock, UserPen, Loader2 } from 'lucide-react'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
 import GoogleButton from 'apps/user-ui/src/shared/components/google-button'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -50,7 +51,7 @@ const Signup = () => {
     
     const signupMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user-registration`, data)
+            const response = await axiosInstance.post('/api/user-registration', data)
             return response.data
         },
         onSuccess: (_, formData) => {
@@ -71,7 +72,7 @@ const Signup = () => {
         mutationFn: async() => {
             if (!userData) return
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user-verification`,
+            const response = await axiosInstance.post('/api/user-verification',
                 {
                     ...userData,
                     otp: otp.join('')

@@ -6,7 +6,8 @@ import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff, Mail, Lock, UserPen, Loader2, Phone, Globe, ChevronDown } from 'lucide-react'
 import { countries } from 'apps/seller-ui/src/utils/countries'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import CreateShop from 'apps/seller-ui/src/shared/modules/auth/create-shop'
 import StripeIcon from 'apps/seller-ui/src/assets/svgs/stripe-icon'
 import toast from 'react-hot-toast'
@@ -49,7 +50,7 @@ const Signup = () => {
     
     const signupMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-registration`, data)
+            const response = await axiosInstance.post('/api/seller-registration', data)
             return response.data
         },
         onSuccess: (_, formData) => {
@@ -70,7 +71,7 @@ const Signup = () => {
         mutationFn: async() => {
             if (!sellerData) return
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-verification`,
+            const response = await axiosInstance.post('/api/seller-verification',
                 {
                     ...sellerData,
                     otp: otp.join('')
@@ -125,7 +126,7 @@ const Signup = () => {
 
     const connectStripeMutation = useMutation({
         mutationFn: async () => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/create-stripe-connect-link`, {
+            const response = await axiosInstance.post('/api/create-stripe-connect-link', {
                 sellerId
             })
             return response.data

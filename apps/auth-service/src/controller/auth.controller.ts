@@ -79,6 +79,9 @@ export const userVerification = async (req: Request, res: Response, next: NextFu
             role: 'user',
         }, process.env.REFRESH_TOKEN as string, { expiresIn: '7d' })
 
+        res.clearCookie('seller_access_token')
+        res.clearCookie('seller_refresh_token')
+
         setCookie(res, 'access_token', accessToken)
         setCookie(res, 'refresh_token', refreshToken)
 
@@ -306,6 +309,9 @@ export const sellerVerification = async (req: Request, res: Response, next: Next
             id: seller.id,
             role: 'seller'
         }, process.env.REFRESH_TOKEN as string, { expiresIn: '7d' })
+
+        res.clearCookie('access_token')
+        res.clearCookie('refresh_token')
 
         setCookie(res, 'seller_access_token', accessToken)
         setCookie(res, 'seller_refresh_token', refreshToken)

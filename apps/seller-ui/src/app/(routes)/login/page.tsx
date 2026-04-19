@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import Link from 'next/link'
 
 
@@ -30,10 +31,7 @@ const Login = () => {
     
     const loginMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/seller-login`, 
-                data, 
-                { withCredentials: true }
-            )
+            const response = await axiosInstance.post('/api/seller-login', data)
             return response.data
         },
         onSuccess: (data) => {

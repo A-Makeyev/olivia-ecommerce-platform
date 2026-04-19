@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import { ChevronDown, Clock, Globe, Loader2, MapPin, NotebookText, Store } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { shopCategories } from 'apps/seller-ui/src/utils/categories'
@@ -26,7 +27,7 @@ const CreateShop = ({
 
     const createShopMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/create-shop`, data)
+            const response = await axiosInstance.post('/api/create-shop', data)
             return response.data
         },
         onSuccess: () => {

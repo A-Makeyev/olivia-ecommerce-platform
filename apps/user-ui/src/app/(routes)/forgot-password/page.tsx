@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { Mail, Loader2, Lock, EyeOff, Eye } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -49,7 +50,7 @@ const ForgotPassword = () => {
 
     const requestOtpMutation = useMutation({
         mutationFn: async ({ email }: { email: string }) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/forgot-password`, 
+            const response = await axiosInstance.post('/api/forgot-password', 
                 { email }
             )
             return response.data
@@ -74,7 +75,7 @@ const ForgotPassword = () => {
         mutationFn: async () => {
             if (!userEmail) return
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/verify-forgot-password`, 
+            const response = await axiosInstance.post('/api/verify-forgot-password', 
                 { email: userEmail, otp: otp.join('') }
             )
             return response.data
@@ -93,7 +94,7 @@ const ForgotPassword = () => {
         mutationFn: async ({ password }: { password: string }) => {
             if (!password) return
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/reset-password`, 
+            const response = await axiosInstance.post('/api/reset-password', 
                 { email: userEmail, newPassword: password }
             )
             return response.data
