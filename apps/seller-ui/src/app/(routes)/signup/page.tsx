@@ -143,23 +143,37 @@ const Signup = () => {
     })
 
     return (
-        <div className="w-full flex flex-col items-center pt-10 min-h-screen">
-             <div className="relative flex items-center justify-between mb-8 md:w-[50%]">
-                <div className="absolute top-[25%] left-0 ml-4 w-[80%] md:w-[85%] lg:w-[90%] h-1 -z-10 bg-slate-300" />
+        <div className="w-full flex flex-col items-center py-10 px-4 min-h-screen bg-[#F1F1F1] text-black">
+            <h1 className="text-3xl font-poppins font-semibold text-black text-center">
+                Signup
+            </h1>
+            <p className="text-center text-lg font-medium py-3 text-[#00000099]">
+                Home · Signup
+            </p>
+             <div className="relative flex items-center justify-between mt-8 mb-16 w-full max-w-md md:max-w-xl mx-auto">
+                <div className="absolute top-5 left-0 w-full h-[2px] bg-slate-200 -z-0" />
+                <div 
+                    className="absolute top-5 left-0 h-[2px] bg-black transition-all duration-300 -z-0" 
+                    style={{ width: `${((activeStep - 1) / 2) * 100}%` }}
+                />
                 {[1,2,3].map((step) => (
-                    <div key={step}>
-                        <div className={`w-10 h-10 mb-1 ml-4 rounded-full flex items-center justify-center text-white font-bold 
-                            ${activeStep >= step ? 'bg-blue-600' : 'bg-slate-300'}
+                    <div key={step} className="flex flex-col items-center relative z-10">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-4
+                            ${activeStep >= step ? 'bg-black border-black text-white' : 'bg-white border-slate-200 text-slate-400'}
                         `}>
-                            {step}
+                            {step < activeStep ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            ) : step}
                         </div>
-                        <span className="font-medium ml-[-15px]">
+                        <span className={`absolute -bottom-8 font-semibold text-[10px] md:text-sm transition-colors duration-300 whitespace-nowrap
+                            ${activeStep >= step ? 'text-black' : 'text-slate-400'}
+                        `}>
                             {step === 1 ? 'Create Account' : step === 2 ? 'Setup Shop' : 'Connect Bank'}
                         </span>
                     </div>
                 ))}
             </div>
-            <div className="md:w-[480px] mt-8 p-8 bg-white rounded-lg shadow-xl">
+            <div className="w-full max-w-[480px] mt-8 p-6 md:p-8 bg-white rounded-lg shadow-xl text-black">
                 {activeStep === 1 && (
                     <>
                         {!showOtp ? (

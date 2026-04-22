@@ -50,15 +50,15 @@ const Login = () => {
     }
 
     return (
-        <div className="w-full py-10 min-h-[85vh] bg-[#F1F1F1]">
+        <div className="w-full py-10 px-4 min-h-[85vh] bg-[#F1F1F1] text-black">
             <h1 className="text-3xl font-poppins font-semibold text-black text-center">
                 Login
             </h1>
             <p className="text-center text-lg font-medium py-3 text-[#00000099]">
                 Home · Login
             </p>
-            <div className="w-full flex justify-center">
-                <div className="md:w-[480px] p-8 bg-white rounded-lg shadow-lg">
+            <div className="w-full flex justify-center mt-4">
+                <div className="w-full max-w-[480px] p-6 md:p-8 bg-white rounded-lg shadow-lg">
                     <h3 className="text-3xl font-semibold text-center mb-5">
                         Login to your account
                     </h3>
