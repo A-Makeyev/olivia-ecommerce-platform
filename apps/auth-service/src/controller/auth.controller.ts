@@ -149,7 +149,7 @@ export const refreshToken = async (req: any, res: Response, next: NextFunction) 
         const refreshToken = req.cookies['refresh_token'] || req.cookies['seller_refresh_token'] || req.headers.authorization?.split(' ')[1]
 
         if (!refreshToken) {
-            return new ValidationError('Refresh token not found')
+            return next(new ValidationError('Refresh token not found'))
         }
 
         const decodedToken = jwt.verify(
@@ -158,7 +158,7 @@ export const refreshToken = async (req: any, res: Response, next: NextFunction) 
         ) as { id: string, role: string }
 
         if (!decodedToken || !decodedToken.id || !decodedToken.role) {
-            return new JsonWebTokenError('Invalid refresh token')
+            return next(new JsonWebTokenError('Invalid refresh token'))
         }
 
         let account 
@@ -169,7 +169,7 @@ export const refreshToken = async (req: any, res: Response, next: NextFunction) 
         }
 
         if (!account) {
-            return new AuthError('Account not found')
+            return next(new AuthError('Account not found'))
         }
 
         const newAccessToken = jwt.sign({

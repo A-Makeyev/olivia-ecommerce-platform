@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
 import GoogleButton from 'apps/user-ui/src/shared/components/google-button'
@@ -18,6 +18,7 @@ type FormData = {
 
 const Login = () => {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const [rememberMe, setRememberMe] = useState(false)
     const [passwordVisible, setPasswordVisible] = useState(false)
     const [serverError, setServerError] = useState<string | null>(null)
@@ -37,6 +38,7 @@ const Login = () => {
         },
         onSuccess: (data) => {
             setServerError(null)
+            queryClient.invalidateQueries({ queryKey: ['user'] })
             router.push('/')
         },
         onError: (error: AxiosError<{message?: string}>) => {

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ type FormData = {
 
 const Login = () => {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const [rememberMe, setRememberMe] = useState(false)
     const [passwordVisible, setPasswordVisible] = useState(false)
     const [serverError, setServerError] = useState<string | null>(null)
@@ -36,7 +37,8 @@ const Login = () => {
         },
         onSuccess: (data) => {
             setServerError(null)
-            router.push('/')
+            queryClient.invalidateQueries({ queryKey: ['seller'] })
+            router.push('/dashboard')
         },
         onError: (error: AxiosError<{message?: string}>) => {
             const errorMessage = error.response?.data?.message || 'Something went wrong'

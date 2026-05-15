@@ -13,22 +13,22 @@ const axiosInstance = axios.create({
 let isRefreshing = false
 
 // Queue of callbacks waiting for the token refresh to complete
-let refreshSubscribers: (() => void)[] = []
+let refreshSubscribers: ((error?: any) => void)[] = []
 
 const handleLogout = () => {
-    if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-    }
+    // For the user-ui (storefront), we don't want to force a redirect to login 
+    // on every 401 error, as many pages are public. The UI components (like Header) 
+    // will handle showing the Login button when unauthenticated.
 }
 
-// Adds a callback to the queue to be called once the token is refreshed
-const subscribeTokenRefresh = (callback: () => void) => {
+// Adds a callback to the queue to be called once the token is refreshed or failed
+const subscribeTokenRefresh = (callback: (error?: any) => void) => {
     refreshSubscribers.push(callback)
 }
 
-// Calls all queued callbacks after a successful token refresh, then clears the queue
-const onRefreshed = () => {
-    refreshSubscribers.forEach((callback) => callback())
+// Calls all queued callbacks after a successful token refresh or failure, then clears the queue
+const onRefreshed = (error?: any) => {
+    refreshSubscribers.forEach((callback) => callback(error))
     refreshSubscribers = []
 }
 
@@ -44,12 +44,20 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        const isRefreshRequest = originalRequest.url?.includes('/api/refresh-token')
+        const isAuthRequest = originalRequest.url?.includes('/login') || originalRequest.url?.includes('/registration')
+        const isAuthPage = typeof window !== 'undefined' && (window.location.pathname === '/login' || window.location.pathname === '/signup')
+
+        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest && !isAuthRequest && !isAuthPage) {
             // If a refresh is already in progress, queue this request to retry after refresh
             if (isRefreshing) {
-                return new Promise((resolve) => {
-                    subscribeTokenRefresh(() => {
-                        resolve(axiosInstance(originalRequest))
+                return new Promise((resolve, reject) => {
+                    subscribeTokenRefresh((err) => {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            resolve(axiosInstance(originalRequest))
+                        }
                     })
                 })
             }
@@ -65,12 +73,12 @@ axiosInstance.interceptors.response.use(
                 )
 
                 isRefreshing = false
-                onRefreshed() // notify all queued requests to retry
+                onRefreshed() // notify all queued requests to retry (success)
                 return axiosInstance(originalRequest) // retry the original request
             } catch(err) {
-                // Refresh failed — clear state and redirect to login
+                // Refresh failed — clear state, notify subscribers, and handle logout
                 isRefreshing = false
-                refreshSubscribers = []
+                onRefreshed(err) // notify all queued requests that refresh failed
                 handleLogout()
                 return Promise.reject(err)
             }
