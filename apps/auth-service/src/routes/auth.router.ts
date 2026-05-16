@@ -14,7 +14,7 @@ import {
     getSeller,
     createShop,
     createStripeConnectLink,
-} from "../controller/auth.controller"
+} from "../controllers/auth.controller"
 import { isSeller } from "@packages/middleware/authorize-roles"
 import isAuthenticated from "@packages/middleware/is-authenticated"
 

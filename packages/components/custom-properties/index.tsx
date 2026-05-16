@@ -59,7 +59,7 @@ const CustomProperties = ({ control, errors }: any) => {
                                             <div className="w-[240px]">
                                                 <Input 
                                                     size="sm"
-                                                    label="Property"
+                                                    label="Name"
                                                     placeholder="Property Name"
                                                     icon={<PackageOpen size={16} />}
                                                     value={newLabel}

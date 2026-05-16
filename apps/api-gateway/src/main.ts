@@ -6,6 +6,7 @@ import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
 import swaggerUi from 'swagger-ui-express'
 import cookieParser from 'cookie-parser'
 import axios from 'axios'
+import initializeSiteConfig from './libs/InitializeSiteConfig'
 
 
 const app = express()
@@ -38,10 +39,18 @@ app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to the API Gateway!' })
 })
 
+app.use('/product', proxy('http://localhost:6002'))
 app.use('/', proxy('http://localhost:6001'))
 
 const port = process.env.PORT || 8080
 const server = app.listen(port, () => {
+  try {
+    initializeSiteConfig()
+    console.log('>>> Site config initialized')
+  } catch(err) {
+    console.error('Failed to initialize site config:', err)
+  }
+
   console.log(`>>> Listening at http://localhost:${port}/api`)
 })
 server.on('error', console.error)
