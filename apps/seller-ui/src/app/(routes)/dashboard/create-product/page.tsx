@@ -3,13 +3,14 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ClipboardPen, Clock, DollarSign, Link, Package, Tag, Loader2, Award, LayoutGrid, Layers } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardPen, Clock, DollarSign, Link, Package, Tag, Award, LayoutGrid, Layers } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
 import CustomProperties from 'packages/components/custom-properties'
 import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import Input from 'packages/components/input'
+import RichTextEditor from 'packages/components/rich-text-editor'
 
 
 const Page = () => {
@@ -161,13 +162,32 @@ const Page = () => {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 -mb-2">
+                    <div className="grid grid-cols-2 gap-4 !-mb-2">
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                size="sm"
+                                label="Brand" 
+                                icon={<Award size={20} />}
+                                placeholder="Product Brand" 
+                                error={errors.brand?.message as string}
+                                {...register('brand', { required: 'Brand is required' })} 
+                            />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                size="sm"
+                                label="Tags (comma separated)" 
+                                icon={<Tag size={20} />}
+                                placeholder="Product Tags" 
+                                error={errors.tags?.message as string}
+                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             {   isLoading ? (
-                                <div className="w-full h-[38px] flex items-center px-3 my-2 rounded-lg border border-slate-400/50 bg-slate-800/50">
-                                    <Loader2 className="animate-spin text-[#80DEEA]" size={18} />
-                                    <span className="ml-2 text-slate-400 text-sm">Loading Categories...</span>
-                                </div>
+                                <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
                                 <p className="text-red-500 text-sm my-2">Failed to load</p>
                             ) : (
@@ -215,10 +235,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             {isLoading ? (
-                                <div className="w-full h-[38px] flex items-center px-3 my-2 rounded-lg border border-slate-400/50 bg-slate-800/50">
-                                    <Loader2 className="animate-spin text-[#80DEEA]" size={18} />
-                                    <span className="ml-2 text-slate-400 text-sm">Loading Sub Categories...</span>
-                                </div>
+                                <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
                                 <p className="text-red-500 text-sm my-2">Failed to load</p>
                             ) : (
@@ -269,21 +286,83 @@ const Page = () => {
                         <div className="col-span-2 md:col-span-1">
                             <Input 
                                 size="sm"
-                                label="Brand" 
-                                icon={<Award size={20} />}
-                                placeholder="Product Brand" 
-                                error={errors.brand?.message as string}
-                                {...register('brand', { required: 'Brand is required' })} 
+                                label="Video URL" 
+                                icon={<Link size={20} />}
+                                placeholder="Video URL" 
+                                error={errors.video_url?.message as string}
+                                {...register('video_url', { 
+                                    required: 'Video URL is required',
+                                    pattern: {
+                                        value: /^((http(s?):\/\/)?(www.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]*)?)$/,
+                                        message: 'Invalid video URL'
+                                    },
+                                })} 
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <Input 
                                 size="sm"
-                                label="Tags (comma separated)" 
+                                label="Regular Price" 
                                 icon={<Tag size={20} />}
-                                placeholder="Product Tags" 
-                                error={errors.tags?.message as string}
-                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
+                                placeholder="Regular Price"
+                                error={errors.regular_price?.message as string}
+                                {...register('regular_price', { 
+                                    valueAsNumber: true,
+                                    min: { value: 1, message: 'Minimum price is at least 1' },
+                                    validate: (value) => !isNaN(value) || 'Please enter a valid number'
+                                })} 
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                size="sm"
+                                label="Warranty" 
+                                icon={<Clock size={20} />}
+                                placeholder="Warranty" 
+                                error={errors.warranty?.message as string}
+                                {...register('warranty', { required: 'Warranty is required' })} 
+                            />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                size="sm"
+                                label="Sale Price" 
+                                icon={<Tag size={20} />}
+                                placeholder="Sale Price"
+                                error={errors.sale_price?.message as string}
+                                {...register('sale_price', { 
+                                    valueAsNumber: true,
+                                    min: { value: 1, message: 'Minimum price is at least 1' },
+                                    validate: (value) => {
+                                        if (isNaN(value)) return 'Please enter a valid number' 
+                                        if (regularPrice && value >= regularPrice) return 'Sale price must be less than regular price'
+                                        return true
+                                    }
+                                })} 
+                            />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <Input 
+                                size="sm"
+                                label="Stock"
+                                icon={<Tag size={20} />}
+                                placeholder="Stock"
+                                error={errors.stock?.message as string}
+                                {...register('stock', { 
+                                    valueAsNumber: true,
+                                    min: { value: 0, message: 'Stock must be at least 1' },
+                                    max: {
+                                        value: 1000,
+                                        message: 'Stock must be less than 1000'
+                                    },
+                                    validate: (value) => {
+                                        if (isNaN(value)) return 'Please enter a valid number' 
+                                        if (!Number.isInteger(value)) return 'Stock must be a whole number'
+                                        return true
+                                    }
+                                })} 
                             />
                         </div>
                     </div>
@@ -304,18 +383,33 @@ const Page = () => {
                             })} 
                         />
                     </div>
-                    <div className="flex w-full gap-4">
-                        <div className="w-full md:w-1/2">
-                            <Input 
-                                size="sm"
-                                label="Warranty" 
-                                icon={<Clock size={20} />}
-                                placeholder="Warranty" 
-                                error={errors.warranty?.message as string}
-                                {...register('warranty', { required: 'Warranty is required' })} 
-                            />
-                        </div>
+                    <div className='w-full md:w-1/2'>
+                        <label className="font-bold text-slate-300 text-base tracking-tight mb-3">
+                            Product Details
+                        </label>
+                        <Controller 
+                            name="details"
+                            control={control}
+                            rules={{
+                                required: 'Details are required',
+                                validate: (value) => {
+                                    const words = value?.split(/\s+/).filter((word: string) => word).length
+                                    return words >= 100 || `Details must be at least 100 words. Current: ${words}`
+                                }
+                            }}
+                            render={({ field }) => (
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
+                            )}
+                        />
                     </div>
+                    {errors.specifications && (
+                        <p className="mt-1 text-red-500 text-sm font-medium">
+                            {errors.specifications.message as string}
+                        </p>
+                    )}
                     <div className="pt-2 border-t border-slate-700/50">
                         <ColorSelector control={control} errors={errors} />  
                     </div>
@@ -362,7 +456,6 @@ const Page = () => {
                                 </p>
                             )}
                         </div>
-
                     </div>
                 </div>
             </div>
