@@ -41,41 +41,33 @@ const CustomProperties = ({ control, errors }: any) => {
 
                             return (
                             <div className="mt-2">
-                                <div className="flex items-center gap-2 mb-3">
+                                <div className="flex items-center gap-2 mb-2">
                                     <label className="block font-bold text-slate-300 text-base tracking-tight">
                                         Custom Properties
                                     </label>
                                 </div>
                                 <div className="flex flex-col gap-3">
                                     <div className="mb-2">
-                                        <div className="flex gap-2 mb-1">
-                                            <div className="w-[240px]">
-                                                <span className="block text-slate-400 text-sm px-1">
-                                                    e.g. storage, model
-                                                </span>
-                                            </div>
+                                        <div className="flex-1">
+                                            <Input 
+                                                size="sm"
+                                                label="Name"
+                                                placeholder="e.g. storage, model"
+                                                icon={<PackageOpen size={16} />}
+                                                value={newLabel}
+                                                onChange={(e: any) => setNewLabel(e.target.value)}
+                                            />
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-[240px]">
-                                                <Input 
-                                                    size="sm"
-                                                    label="Name"
-                                                    placeholder="Property Name"
-                                                    icon={<PackageOpen size={16} />}
-                                                    value={newLabel}
-                                                    onChange={(e: any) => setNewLabel(e.target.value)}
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={addProperty}
-                                                className="flex items-center gap-2 ml-2 w-[20%] text-blue-500 hover:text-blue-400 transition"
-                                                title="Add property"
-                                            >
-                                                <PlusCircle size={20} />
-                                                <span>Add Property</span>
-                                            </button>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={addProperty}
+                                            disabled={!newLabel.trim()}
+                                            className={`flex items-center gap-2 mt-4 transition-all duration-300 text-sm ${!newLabel.trim() ? 'text-slate-500 cursor-not-allowed opacity-50' : 'text-blue-500 hover:text-blue-400'}`}
+                                            title="Add property"
+                                        >
+                                            <PlusCircle size={16} />
+                                            <span>Add Property</span>
+                                        </button>
                                     </div>
                                     {properties.length > 0 && (
                                         <div className="flex flex-col gap-3">

@@ -21,7 +21,7 @@ const ColorSelector = ({ control, errors }: any) => {
 
     return (
         <div className="mb-6">
-            <label className="block font-semibold text-slate-300 mb-2">
+            <label className="block font-bold text-slate-300 mb-3">
                 Colors
             </label>
             <Controller

@@ -37,7 +37,7 @@ const CustomSpecifications = ({ control, errors }: any) => {
                     </div>
                 )}
                 {fields?.map((field, index) => (
-                    <div key={field.id} className="flex items-start gap-2">
+                    <div key={field.id} className="flex items-center gap-2">
                         <div className="w-[200px]">
                             <Controller 
                                 name={`custom_specifications.${index}.name`}
@@ -71,19 +71,19 @@ const CustomSpecifications = ({ control, errors }: any) => {
                         <button
                             type="button"
                             onClick={() => remove(index)}
-                            className="p-1 text-slate-300 hover:scale-110 transition mt-3"
+                            className="p-1 text-slate-300 hover:text-red-400 hover:scale-110 transition flex-shrink-0"
                             title="Remove specification"
                         >
-                            <Trash2 size={20} />
+                            <Trash2 size={16} />
                         </button>
                     </div>
                 ))}
                 <button
                     type="button"
                     onClick={() => append({ name: '', value: '' })}
-                    className="flex items-center gap-2 w-[20%] mt-2 text-blue-500 hover:text-blue-400 transition"
+                    className="flex items-center gap-1.5 mt-1 text-blue-500 hover:text-blue-400 transition text-sm"
                 >
-                    <PlusCircle size={20} />
+                    <PlusCircle size={16} />
                     Add Specification
                 </button>
             </div>
