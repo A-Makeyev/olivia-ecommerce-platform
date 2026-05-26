@@ -8,10 +8,10 @@ const getUser = async () => {
 }
 
 const useUser = () => {
-    const { 
-        data: user, 
-        isLoading, 
-        isError, 
+    const {
+        data: user,
+        isLoading,
+        isError,
         refetch
     } = useQuery({
         queryKey: ['user'],

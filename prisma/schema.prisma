@@ -53,8 +53,8 @@ model shops {
   opening_hours   String?
   website         String?
   socialLinks     Json[]
-  ratings         Float           @default(0)
   reviews         shopReviews[]
+  ratings         Float           @default(0)
   sellerId        String          @unique @db.ObjectId
   sellers         sellers         @relation(fields: [sellerId], references: [id])
   createdAt       DateTime        @default(now())
@@ -74,7 +74,18 @@ model shopReviews {
 }
 
 model site_config {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
   categories      String[]
   subCategories   Json
+}
+
+model discount_codes {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  public_name       String
+  discountCode      String      @unique
+  discountType      String      
+  discountValue     Float
+  sellerId          String      @db.ObjectId
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }

@@ -8,10 +8,10 @@ const getSeller = async () => {
 }
 
 const useSeller = () => {
-    const { 
-        data: seller, 
-        isLoading, 
-        isError, 
+    const {
+        data: seller,
+        isLoading,
+        isError,
         refetch
     } = useQuery({
         queryKey: ['seller'],

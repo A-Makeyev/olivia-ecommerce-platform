@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Link, Package, Tag, Award, LayoutGrid, Layers, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
@@ -12,6 +12,7 @@ import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import Input from 'packages/components/input'
 import RichTextEditor from 'packages/components/rich-text-editor'
 import SizeSelector from 'packages/components/size-selector'
+import Link from 'next/link'
 
 const Page = () => {
     const [images, setImages] = useState<(File | null)[]>([null])
@@ -21,13 +22,13 @@ const Page = () => {
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
 
-    const { 
-        register, 
-        control, 
-        watch, 
-        setValue, 
-        handleSubmit, 
-        formState: { errors } 
+    const {
+        register,
+        control,
+        watch,
+        setValue,
+        handleSubmit,
+        formState: { errors }
     } = useForm()
 
     const { data, isLoading, isError } = useQuery({
@@ -36,7 +37,7 @@ const Page = () => {
             try {
                 const res = await axiosInstance.get('/product/api/get-categories')
                 return res.data
-            } catch(err) {
+            } catch (err) {
                 console.log(err)
             }
         },
@@ -60,7 +61,7 @@ const Page = () => {
     const handleImageChange = (file: File | null, index: number) => {
         const updatedImages = [...images]
         updatedImages[index] = file
-        
+
         if (index === images.length - 1 && images.length < 8) {
             updatedImages.push(null)
         }
@@ -72,7 +73,7 @@ const Page = () => {
     const handleImageRemove = (index: number) => {
         setImages((prevImages) => {
             let updatedImages = [...prevImages]
-            
+
             if (index === -1) {
                 updatedImages[0] = null
             } else {
@@ -89,7 +90,7 @@ const Page = () => {
         setValue('images', images)
     }
 
-    const handleSaveDraft = () => {}
+    const handleSaveDraft = () => { }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-8 text-white shadow-lg rounded-lg">
@@ -97,15 +98,16 @@ const Page = () => {
                 Create Product
             </h2>
             <div className="flex items-center text-sm">
-                <span className="text-[#80DEEA] cursor-pointer">Dashboard</span>
+                <Link href={"/dashboard"} className="text-[#80DEEA] cursor-pointer">
+                    Dashboard
+                </Link>
                 <ChevronRight size={15} className="opacity-[0.8]" />
                 <span>Create Product</span>
             </div>
-
             <div className="flex flex-col md:flex-row w-full gap-6 py-4">
                 <div className="w-full md:w-[35%]">
                     {images?.length > 0 && (
-                        <ImagePlaceholder 
+                        <ImagePlaceholder
                             small={false}
                             size="765 x 850"
                             onImageChange={handleImageChange}
@@ -115,7 +117,7 @@ const Page = () => {
                     )}
                     <div className="grid grid-cols-2 gap-2 py-4">
                         {images.slice(1).map((_, index) => (
-                            <ImagePlaceholder 
+                            <ImagePlaceholder
                                 small
                                 size="765 x 850"
                                 onImageChange={handleImageChange}
@@ -129,13 +131,13 @@ const Page = () => {
 
                 <div className="w-full md:w-[65%] space-y-2">
                     <div className="w-full mb-4">
-                        <Input 
+                        <Input
                             size="sm"
-                            label="Product Title" 
+                            label="Product Title"
                             icon={<Package size={20} />}
-                            placeholder="Product Title" 
+                            placeholder="Product Title"
                             error={errors.title?.message as string}
-                            {...register('title', { required: 'Product title is required' })} 
+                            {...register('title', { required: 'Product title is required' })}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -225,101 +227,101 @@ const Page = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Brand" 
+                                label="Brand"
                                 icon={<Award size={20} />}
-                                placeholder="Product Brand" 
+                                placeholder="Product Brand"
                                 error={errors.brand?.message as string}
-                                {...register('brand', { required: 'Brand is required' })} 
+                                {...register('brand', { required: 'Brand is required' })}
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
                                 label="Stock"
                                 icon={<Boxes size={20} />}
                                 placeholder="Stock"
                                 error={errors.stock?.message as string}
-                                {...register('stock', { 
+                                {...register('stock', {
                                     valueAsNumber: true,
                                     min: { value: 0, message: 'Stock must be at least 0' },
                                     max: { value: 1000, message: 'Stock must be less than 1000' },
                                     validate: (value) => {
-                                        if (isNaN(value)) return 'Please enter a valid number' 
+                                        if (isNaN(value)) return 'Please enter a valid number'
                                         if (!Number.isInteger(value)) return 'Stock must be a whole number'
                                         return true
                                     }
-                                })} 
+                                })}
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Regular Price" 
+                                label="Regular Price"
                                 icon={<Banknote size={20} />}
                                 placeholder="Regular Price"
                                 error={errors.regular_price?.message as string}
-                                {...register('regular_price', { 
+                                {...register('regular_price', {
                                     valueAsNumber: true,
                                     min: { value: 1, message: 'Minimum price is at least 1' },
                                     validate: (value) => !isNaN(value) || 'Please enter a valid number'
-                                })} 
+                                })}
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Sale Price" 
+                                label="Sale Price"
                                 icon={<Coins size={20} />}
                                 placeholder="Sale Price"
                                 error={errors.sale_price?.message as string}
-                                {...register('sale_price', { 
+                                {...register('sale_price', {
                                     valueAsNumber: true,
                                     min: { value: 1, message: 'Minimum price is at least 1' },
                                     validate: (value) => {
-                                        if (isNaN(value)) return 'Please enter a valid number' 
+                                        if (isNaN(value)) return 'Please enter a valid number'
                                         if (regularPrice && value >= regularPrice) return 'Sale price must be less than regular price'
                                         return true
                                     }
-                                })} 
+                                })}
                             />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Tags (comma separated)" 
+                                label="Tags (comma separated)"
                                 icon={<Tag size={20} />}
-                                placeholder="Product Tags" 
+                                placeholder="Product Tags"
                                 error={errors.tags?.message as string}
-                                {...register('tags', { required: 'One or more tags separated by comma is required' })} 
+                                {...register('tags', { required: 'One or more tags separated by comma is required' })}
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Warranty" 
+                                label="Warranty"
                                 icon={<ShieldCheck size={20} />}
-                                placeholder="Warranty" 
+                                placeholder="Warranty"
                                 error={errors.warranty?.message as string}
-                                {...register('warranty', { required: 'Warranty is required' })} 
+                                {...register('warranty', { required: 'Warranty is required' })}
                             />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Product URL (Slug)" 
-                                icon={<Link size={20} />}
-                                placeholder="Product Slug" 
+                                label="Product URL (Slug)"
+                                icon={<Link2 size={20} />}
+                                placeholder="Product Slug"
                                 error={errors.slug?.message as string}
-                                {...register('slug', { 
+                                {...register('slug', {
                                     required: 'Slug is required',
                                     pattern: {
                                         value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
@@ -327,41 +329,41 @@ const Page = () => {
                                     },
                                     minLength: { value: 3, message: 'Slug must be at least 3 characters long' },
                                     maxLength: { value: 50, message: 'Slug must be less than 50 characters long' }
-                                })} 
+                                })}
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                            <Input 
+                            <Input
                                 size="sm"
-                                label="Video URL" 
+                                label="Video URL"
                                 icon={<Video size={20} />}
-                                placeholder="Video URL" 
+                                placeholder="Video URL"
                                 error={errors.video_url?.message as string}
-                                {...register('video_url', { 
+                                {...register('video_url', {
                                     required: 'Video URL is required',
                                     pattern: {
                                         value: /^((http(s?):\/\/)?(www.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]*)?)$/,
                                         message: 'Invalid video URL'
                                     },
-                                })} 
+                                })}
                             />
                         </div>
                     </div>
                     <div className="w-full !mt-4">
-                        <Input 
+                        <Input
                             size="sm"
                             type="textarea"
-                            label="Product Description" 
+                            label="Product Description"
                             icon={<ClipboardPen size={20} />}
-                            placeholder="Product Description" 
+                            placeholder="Product Description"
                             error={errors.description?.message as string}
-                            {...register('description', { 
-                                required: 'Product description is required', 
+                            {...register('description', {
+                                required: 'Product description is required',
                                 validate: (value) => {
                                     const words = value.trim().split(/\s+/).length
                                     return words <= 150 || `Description must be less than 150 words. Current: ${words}`
                                 }
-                            })} 
+                            })}
                         />
                     </div>
                     <div className="flex flex-col md:flex-row gap-6">
@@ -369,7 +371,7 @@ const Page = () => {
                             <label className="font-bold text-slate-300 text-base tracking-tight mb-3 block">
                                 Product Details
                             </label>
-                            <Controller 
+                            <Controller
                                 name="details"
                                 control={control}
                                 rules={{
@@ -390,7 +392,7 @@ const Page = () => {
                             )}
 
                             <div className="pt-4">
-                                <CustomProperties control={control} errors={errors} /> 
+                                <CustomProperties control={control} errors={errors} />
                             </div>
                         </div>
 
@@ -434,8 +436,12 @@ const Page = () => {
                                         {errors.cash_on_delivery.message as string}
                                     </p>
                                 )}
-                            </div>
 
+                                <label className="block font-bold text-slate-300 text-base tracking-tight my-4">
+                                    Discount Codes
+                                </label>
+
+                            </div>
                             <div className="mt-3 pt-3">
                                 <CustomSpecifications control={control} errors={errors} />
                             </div>
@@ -454,7 +460,7 @@ const Page = () => {
                         Save Draft
                     </button>
                 )}
-                <button 
+                <button
                     type="submit"
                     disabled={loading}
                     className="w-[84px] h-[40px] flex items-center justify-center bg-slate-800/50 text-slate-300 rounded-md hover:bg-slate-800 transition-colors"

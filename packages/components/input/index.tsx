@@ -80,7 +80,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
                     )}
                 </div>
                 {error && (
-                    <p className="mt-2 text-red-500 font-medium">
+                    <p className="mt-2 text-red-500 font-medium text-sm">
                         {error}
                     </p>
                 )}

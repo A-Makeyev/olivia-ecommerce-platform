@@ -1,5 +1,4 @@
-10 45 32
-
+11 32 20
 
 npx create-nx-workspace@20.6.1 .
 npx nx add @nx/express
@@ -10,4 +9,4 @@ Redis -> https://upstash.com
 winget install --id Google.Antigravity --force
 
 
-fix login at header & sub
+[x] fix login at header & sub
