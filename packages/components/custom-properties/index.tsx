@@ -72,7 +72,7 @@ const CustomProperties = ({ control, errors }: any) => {
                                     {properties.length > 0 && (
                                         <div className="flex flex-col gap-3">
                                             {properties.map((property, index) => (
-                                                <div key={index} className="group border border-slate-700/40 w-[450px] p-3 rounded-xl bg-slate-800/40 hover:border-blue-500/30 transition-all duration-300">
+                                                <div key={index} className="group border border-slate-700/40 w-[430px] p-3 rounded-lg bg-slate-800/40 hover:border-blue-500/30 transition-all duration-300">
                                                     <div className="flex items-center justify-between pb-2 mb-3">
                                                         <div className="flex items-center gap-2">
                                                             <PackageOpen size={16} className="text-blue-400" />

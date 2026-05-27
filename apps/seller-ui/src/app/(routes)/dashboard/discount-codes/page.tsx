@@ -31,6 +31,7 @@ const Page = () => {
         register,
         handleSubmit,
         control,
+        watch,
         reset,
         formState: { errors }
     } = useForm({
@@ -78,11 +79,13 @@ const Page = () => {
 
     const onSubmit = (data: any) => {
         if (discountCodes.length >= 8) {
-            toast.error('You can only create 8 discount codes at a time')
+            toast.error('You can only create 8 discount codes')
             return
         }
         createDiscountCodeMutation.mutate(data)
     }
+
+    const discountType = watch('discountType')
 
     return (
         <div className="w-full min-h-screen p-4 sm:p-8">
@@ -100,7 +103,8 @@ const Page = () => {
                     </div>
                 </div>
                 <button 
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] font-semibold rounded-xl transition-colors shadow-lg shadow-[#80DEEA]/10 w-full sm:w-auto text-sm"
+                    disabled={discountCodes?.length >= 8}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] font-semibold rounded-xl transition-colors shadow-lg shadow-[#80DEEA]/10 w-full sm:w-auto text-sm disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none"
                     onClick={() => setShowModal(true)}
                 >
                     <PlusCircle size={18} />
@@ -214,6 +218,10 @@ const Page = () => {
                                 error={errors.public_name?.message}
                                 {...register('public_name', { 
                                     required: 'Name is required',
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9 ]+$/,
+                                        message: 'Code must contain only letters and numbers'
+                                    },
                                     validate: (value) => 
                                         !discountCodes.some((code: any) => code.public_name.trim().toLowerCase() === value.trim().toLowerCase()) 
                                         || 'A discount code with this name already exists'
@@ -255,7 +263,18 @@ const Page = () => {
                                 min={1}
                                 className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 error={errors.discountValue?.message}
-                                {...register('discountValue', { required: 'Value is required' })}
+                                {...register('discountValue', { 
+                                    required: 'Value is required',
+                                    valueAsNumber: true,
+                                    min: {
+                                        value: 1,
+                                        message: 'Value must be at least 1'
+                                    },
+                                    max: {
+                                        value: discountType === 'percentage' ? 100 : 10000,
+                                        message: discountType === 'percentage' ? 'Value must be 100% or less' : 'Value must be $10,000 or less'
+                                    }
+                                })}
                             />
                              <Input 
                                  size="sm"
@@ -264,15 +283,18 @@ const Page = () => {
                                  placeholder="Code"
                                  error={errors.discountCode?.message}
                                  {...register('discountCode', { 
-                                     required: 'Code is required',
-                                     maxLength: {
-                                         value: 10,
-                                         message: 'Code must be 10 characters or less'
-                                     },
-                                     validate: (value) => !/\s/.test(value) || 'Code cannot contain spaces'
+                                    required: 'Code is required',
+                                    maxLength: {
+                                        value: 10,
+                                        message: 'Code must be 10 characters or less'
+                                    },
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9 ]+$/,
+                                        message: 'Code must contain only letters and numbers'
+                                    },
+                                    setValueAs: (value) => value?.replace(/\s/g, '').toUpperCase()
                                  })}
                              />
-
                             <div className="flex justify-start gap-3 pt-1">
                                 <button
                                     type="submit"

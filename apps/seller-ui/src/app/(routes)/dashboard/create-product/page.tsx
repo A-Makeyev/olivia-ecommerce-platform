@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
@@ -15,12 +15,12 @@ import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
 
 const Page = () => {
-    const [images, setImages] = useState<(File | null)[]>([null])
     const [isChanged, setIsChanged] = useState(true)
     const [loading, setLoading] = useState(false)
     const [isCodOpen, setIsCodOpen] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
+    const [images, setImages] = useState<(File | null)[]>([null])
 
     const {
         register,
@@ -43,6 +43,14 @@ const Page = () => {
         },
         staleTime: 1000 * 60 * 5,
         retry: 2
+    })
+
+    const { data: discountCodes = [], isLoading: discountCodesLoading, isError: discountCodesError } = useQuery({
+        queryKey: ['discount-codes'],
+        queryFn: async () => {
+            const res = await axiosInstance.get('/product/api/get-discount-codes')
+            return res?.data?.discountCodes || []
+        }
     })
 
     const categories = data?.categories || []
@@ -145,7 +153,7 @@ const Page = () => {
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm my-2">Failed to load</p>
+                                <p className="text-red-500 text-sm my-2">Failed to load sub category</p>
                             ) : (
                                 <Controller
                                     name="category"
@@ -186,7 +194,7 @@ const Page = () => {
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm my-2">Failed to load</p>
+                                <p className="text-red-500 text-sm my-2">Failed to load category</p>
                             ) : (
                                 <Controller
                                     name="subCategories"
@@ -436,11 +444,67 @@ const Page = () => {
                                         {errors.cash_on_delivery.message as string}
                                     </p>
                                 )}
-
                                 <label className="block font-bold text-slate-300 text-base tracking-tight my-4">
                                     Discount Codes
                                 </label>
+                                {discountCodesLoading ? (
+                                    <Loader2 className="animate-spin text-[#80DEEA]" />
+                                ) : discountCodes?.length === 0 ? (
+                                    <div className="flex justify-start items-center gap-2">
+                                        <p className="text-slate-500 text-sm">
+                                            No discount codes available.
+                                        </p>
+                                        <Link href={"/dashboard/discount-codes"} className="flex items-center gap-1 text-[#80DEEA] hover:text-[#4DD0E1] text-sm cursor-pointer transition-colors">
+                                            <PlusCircle size={16} />
+                                            <span>Create</span>
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-3">
+                                        {discountCodes?.map((code: any) => (
+                                            <button
+                                                key={code.id}
+                                                type="button"
+                                                className={`px-3 py-1 text-sm font-semibold border rounded-md transition duration-100
+                                                    ${watch('discountCodes')?.includes(code.id) ? "bg-cyan-500 text-black scale-105" : "text-slate-300 hover:bg-slate-700"}
+                                                `}
+                                                onClick={() => {
+                                                    const currentSelection = watch('discountCodes') || []
+                                                    const updatedSelection = currentSelection?.includes(code.id)
+                                                        ? currentSelection.filter((id: string) => id !== code.id)
+                                                        : [...currentSelection, code.id]
+                                                    setValue('discountCodes', updatedSelection, { shouldDirty: true })
+                                                }}
+                                            >
+                                                {code?.discountCode} - {code?.discountType === 'percentage' ? `${code?.discountValue}%` : `$${code?.discountValue}`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
 
+                                {/* using select */}
+                                {/* {discountCodesLoading ? (
+                                    <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
+                                ) : discountCodesError ? (
+                                    <p className="text-red-500 text-sm my-2">Failed to load discount codes</p>
+                                ) : (
+                                    <div className="relative my-2">
+                                        <select
+                                            {...register('discount_codes', { required: 'Discount codes are required' })}
+                                            className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
+                                        >
+                                            <option value="" className="bg-slate-900">Select Discount Code</option>
+                                            {discountCodes.map((discount: any) => (
+                                                <option key={discount?.id} value={discount?.discountCode} className="bg-slate-900">
+                                                    {discount?.discountCode} - {discount?.discountType === 'percentage' ? `${discount?.discountValue}%` : `${discount?.discountValue} ETB`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className={`absolute top-[7px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isCodOpen ? 'rotate-180' : 'rotate-0'}`}>
+                                            <ChevronDown size={18} />
+                                        </div>
+                                    </div>
+                                )} */}
                             </div>
                             <div className="mt-3 pt-3">
                                 <CustomSpecifications control={control} errors={errors} />
