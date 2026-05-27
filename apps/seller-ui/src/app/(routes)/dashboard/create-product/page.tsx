@@ -102,15 +102,37 @@ const Page = () => {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-8 text-white shadow-lg rounded-lg">
-            <h2 className="text-2xl py-2 font-semibold text-white font-Poppins">
-                Create Product
-            </h2>
-            <div className="flex items-center text-sm">
-                <Link href={"/dashboard"} className="text-[#80DEEA] cursor-pointer">
-                    Dashboard
-                </Link>
-                <ChevronRight size={15} className="opacity-[0.8]" />
-                <span>Create Product</span>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div>
+                    <h2 className="text-2xl font-semibold text-white font-Poppins">
+                        Create Product
+                    </h2>
+                    <div className="flex items-center text-sm text-slate-400 mt-1">
+                        <Link href={"/dashboard"} className="text-[#80DEEA] hover:underline cursor-pointer">
+                            Dashboard
+                        </Link>
+                        <ChevronRight size={14} className="mx-1 opacity-[0.8]" />
+                        <span>Create Product</span>
+                    </div>
+                </div>
+                <div className="flex justify-end gap-3">
+                    {isChanged && (
+                        <button
+                            type="button"
+                            onClick={handleSaveDraft}
+                            className="px-4 py-2 text-sm font-semibold bg-slate-800/50 text-slate-300 rounded-md hover:bg-slate-800/70 transition-colors"
+                        >
+                            Save Draft
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-[84px] h-[40px] flex items-center justify-center text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg shadow-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
+                    >
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
+                    </button>
+                </div> 
             </div>
             <div className="flex flex-col md:flex-row w-full gap-6 py-4">
                 <div className="w-full md:w-[35%]">
@@ -419,7 +441,7 @@ const Page = () => {
                                     </div>
                                     <select
                                         defaultValue="yes"
-                                        className="w-full pl-8 pr-8 py-1 min-h-[32px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white relative z-20 cursor-pointer"
+                                        className="w-[85%] min-h-[32px] pl-8 pr-8 py-1 appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white relative z-20 cursor-pointer"
                                         onClick={() => setIsCodOpen(prev => !prev)}
                                         {...(() => {
                                             const { onBlur, ...rest } = register('cash_on_delivery', { required: 'Cash on delivery is required' })
@@ -435,7 +457,7 @@ const Page = () => {
                                         <option value="yes" className="bg-slate-900">Yes</option>
                                         <option value="no" className="bg-slate-900">No</option>
                                     </select>
-                                    <div className={`absolute top-[7px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isCodOpen ? 'rotate-180' : 'rotate-0'}`}>
+                                    <div className={`absolute top-[7px] left-[70%] lg:left-[73%] xl:left-[76%] text-slate-400 pointer-events-none z-30 transition-transform ${isCodOpen ? 'rotate-180' : 'rotate-0'}`}>
                                         <ChevronDown size={18} />
                                     </div>
                                 </div>
@@ -481,30 +503,6 @@ const Page = () => {
                                         ))}
                                     </div>
                                 )}
-
-                                {/* using select */}
-                                {/* {discountCodesLoading ? (
-                                    <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
-                                ) : discountCodesError ? (
-                                    <p className="text-red-500 text-sm my-2">Failed to load discount codes</p>
-                                ) : (
-                                    <div className="relative my-2">
-                                        <select
-                                            {...register('discount_codes', { required: 'Discount codes are required' })}
-                                            className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
-                                        >
-                                            <option value="" className="bg-slate-900">Select Discount Code</option>
-                                            {discountCodes.map((discount: any) => (
-                                                <option key={discount?.id} value={discount?.discountCode} className="bg-slate-900">
-                                                    {discount?.discountCode} - {discount?.discountType === 'percentage' ? `${discount?.discountValue}%` : `${discount?.discountValue} ETB`}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <div className={`absolute top-[7px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isCodOpen ? 'rotate-180' : 'rotate-0'}`}>
-                                            <ChevronDown size={18} />
-                                        </div>
-                                    </div>
-                                )} */}
                             </div>
                             <div className="mt-3 pt-3">
                                 <CustomSpecifications control={control} errors={errors} />
@@ -512,25 +510,6 @@ const Page = () => {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-                {isChanged && (
-                    <button
-                        type="button"
-                        onClick={handleSaveDraft}
-                        className="px-4 py-2 bg-slate-800/50 text-slate-300 rounded-md hover:bg-slate-800 transition-colors"
-                    >
-                        Save Draft
-                    </button>
-                )}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-[84px] h-[40px] flex items-center justify-center bg-slate-800/50 text-slate-300 rounded-md hover:bg-slate-800 transition-colors"
-                >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
-                </button>
             </div>
         </form>
     )

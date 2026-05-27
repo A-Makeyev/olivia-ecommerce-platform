@@ -10,8 +10,8 @@ const DeleteDiscountCodeModal = ({ discount, onClose, onConfirm, isPending, isEr
     error: unknown
 }) => {
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-black border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white font-Poppins">Confirm Delete</h3>
                     <button
@@ -28,16 +28,16 @@ const DeleteDiscountCodeModal = ({ discount, onClose, onConfirm, isPending, isEr
                     <br />
                     This action cannot be undone
                 </p>
-                <div className="flex gap-3 pt-5">
+                <div className="flex gap-3 pt-5 text-sm font-semibold text-slate-300">
                     <button
-                        className="flex-1 px-4 py-2 text-sm border border-slate-800 text-slate-300 hover:bg-slate-950 font-semibold transition rounded-lg"
+                        className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700/70 transition rounded-lg"
                         onClick={onClose}
                         disabled={isPending}
                     >
                         Cancel
                     </button>
                     <button
-                        className="flex-1 flex items-center justify-center px-4 py-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 font-semibold transition rounded-lg"
+                        className="flex-1 flex items-center justify-center px-4 py-2 bg-red-600/60 hover:bg-red-600/80 transition rounded-lg"
                         onClick={onConfirm}
                         disabled={isPending}
                     >

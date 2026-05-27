@@ -104,7 +104,7 @@ const Page = () => {
                 </div>
                 <button 
                     disabled={discountCodes?.length >= 8}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] font-semibold rounded-xl transition-colors shadow-lg shadow-[#80DEEA]/10 w-full sm:w-auto text-sm disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg shadow-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
                     onClick={() => setShowModal(true)}
                 >
                     <PlusCircle size={18} />
