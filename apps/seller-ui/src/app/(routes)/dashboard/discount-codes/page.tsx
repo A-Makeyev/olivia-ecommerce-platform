@@ -121,7 +121,7 @@ const Page = () => {
                         <p className="text-sm font-medium tracking-wide">Loading discount codes</p>
                     </div>
                 ) : isError ? (
-                    <p className="text-red-500 py-4">Failed to fetch discount codes</p>
+                    <p className="text-red-500 py-4">Failed to load discount codes</p>
                 ) : discountCodes && discountCodes.length > 0 ? (
                     <>
                         {/* Mobile card list */}

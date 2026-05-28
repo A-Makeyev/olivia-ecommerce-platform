@@ -1,6 +1,7 @@
 import { NotFoundError, ValidationError } from '@packages/error-handler'
-import prisma from '@packages/libs/prisma'
 import { Request, Response, NextFunction } from 'express'
+import { imagekit } from '@packages/libs/imagekit'
+import prisma from '@packages/libs/prisma'
 
 
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
@@ -121,6 +122,38 @@ export const deleteDiscountCode = async (req: any, res: Response, next: NextFunc
       success: true,
       message: 'Discount code deleted successfully'
     })
+  } catch(err) {
+    return next(err)
+  }
+}
+
+export const uploadProductImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileName } = req.body
+
+    if (!fileName) {
+      return next(new ValidationError('No image provided'))
+    }
+
+    const uploadedFile = await imagekit.upload({
+      file: fileName,
+      fileName: `product-${Date.now()}.jpg`,
+      folder: '/products'
+    })
+
+    res.status(201).json({
+      success: true,
+      file_url: uploadedFile.url,
+      fileName: uploadedFile.fileId
+    })  
+  } catch(err) {
+    return next(err)
+  }
+}
+
+export const deleteProductImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    
   } catch(err) {
     return next(err)
   }

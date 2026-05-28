@@ -13,6 +13,7 @@ import Input from 'packages/components/input'
 import RichTextEditor from 'packages/components/rich-text-editor'
 import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 const Page = () => {
     const [isChanged, setIsChanged] = useState(true)
@@ -66,36 +67,56 @@ const Page = () => {
         console.log(data)
     }
 
-    const handleImageChange = (file: File | null, index: number) => {
-        const updatedImages = [...images]
-        updatedImages[index] = file
-
-        if (index === images.length - 1 && images.length < 8) {
-            updatedImages.push(null)
-        }
-
-        setImages(updatedImages)
-        setValue('images', updatedImages)
+    const convertFileToBase64 = (file: File) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result)
+            reader.onerror = error => reject(error)
+        })
     }
 
-    const handleImageRemove = (index: number) => {
-        setImages((prevImages) => {
-            let updatedImages = [...prevImages]
+    const handleImageChange = async (file: File | null, index: number) => {
+        if (!file) return 
 
-            if (index === -1) {
-                updatedImages[0] = null
-            } else {
-                updatedImages.splice(index, 1)
-            }
+        try {
+            const fileName = await convertFileToBase64(file)
+            const res = await axiosInstance.post('/product/api/upload-product-image', { fileName })
+            const updatedImages = [...images]
 
-            if (!updatedImages.includes(null) && updatedImages.length < 8) {
+            updatedImages[index] = res.data.file_url
+
+            if (index === images.length - 1 && updatedImages.length < 8) {
                 updatedImages.push(null)
             }
 
-            return updatedImages
-        })
+            setImages(updatedImages)
+            setValue('images', updatedImages)
+        } catch(err) {
+            toast.error('Failed to upload image. Please try again')
+        }
+    }
 
-        setValue('images', images)
+    const handleImageRemove = async (index: number) => {
+        try {
+            const updatedImages = [...images]
+            const imageToDelete = updatedImages[index]
+            
+            if (imageToDelete && typeof imageToDelete === 'string') {
+                //await axiosInstance.delete(`/product/api/delete-product-image/${imageToDelete}`)
+            }
+
+            updatedImages.splice(index, 1)
+
+            if (!updatedImages.includes(null) && updatedImages.length <8) {
+                updatedImages.push(null)
+            }
+
+            setImages(updatedImages)
+            setValue('images', updatedImages)
+        } catch(err) {
+            toast.error('Failed to remove image. Please try again')
+        }
     }
 
     const handleSaveDraft = () => { }
@@ -175,7 +196,7 @@ const Page = () => {
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm my-2">Failed to load sub category</p>
+                                <p className="text-red-500 text-sm mt-2">Failed to load sub category</p>
                             ) : (
                                 <Controller
                                     name="category"
@@ -216,7 +237,7 @@ const Page = () => {
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm my-2">Failed to load category</p>
+                                <p className="text-red-500 text-sm mt-2">Failed to load category</p>
                             ) : (
                                 <Controller
                                     name="subCategories"
@@ -471,6 +492,8 @@ const Page = () => {
                                 </label>
                                 {discountCodesLoading ? (
                                     <Loader2 className="animate-spin text-[#80DEEA]" />
+                                ) : discountCodesError ? (
+                                    <p className="text-red-500 text-sm mt-2">Failed to load discount codes</p>
                                 ) : discountCodes?.length === 0 ? (
                                     <div className="flex justify-start items-center gap-2">
                                         <p className="text-slate-500 text-sm">
