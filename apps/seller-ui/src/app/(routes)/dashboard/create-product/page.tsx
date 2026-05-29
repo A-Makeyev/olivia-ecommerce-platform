@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
@@ -14,6 +14,7 @@ import RichTextEditor from 'packages/components/rich-text-editor'
 import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 
 interface UploadedImage {
@@ -22,9 +23,12 @@ interface UploadedImage {
 }
 
 const Page = () => {
-    const [isChanged, setIsChanged] = useState(true)
     const [loading, setLoading] = useState(false)
+    const [isChanged, setIsChanged] = useState(true)
     const [isCodOpen, setIsCodOpen] = useState(false)
+    const [selectedImage, setSelectedImage] = useState('')
+    const [uploadLoader, setUploadLoader] = useState(false)
+    const [openImageModal, setOpenImageModal] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
     const [images, setImages] = useState<(UploadedImage | null)[]>([null])
@@ -41,12 +45,11 @@ const Page = () => {
     const { data, isLoading, isError } = useQuery({
         queryKey: ['categories'],
         queryFn: async () => {
-            try {
-                const res = await axiosInstance.get('/product/api/get-categories')
-                return res.data
-            } catch (err) {
-                console.log(err)
-            }
+            const res = await axiosInstance.get('/product/api/get-categories')
+            return res.data
+        },
+        meta: {
+            onError: (err: unknown) => console.log(err)
         },
         staleTime: 1000 * 60 * 5,
         retry: 2
@@ -85,6 +88,8 @@ const Page = () => {
     const handleImageChange = async (file: File | null, index: number) => {
         if (!file) return 
 
+        setUploadLoader(true)
+
         try {
             const fileName = await convertFileToBase64(file)
             const res = await axiosInstance.post('/product/api/upload-product-image', { fileName })
@@ -106,6 +111,8 @@ const Page = () => {
             setValue('images', updatedImages)
         } catch(err) {
             toast.error('Failed to upload image. Please try again')
+        } finally {
+            setUploadLoader(false)
         }
     }
 
@@ -177,8 +184,12 @@ const Page = () => {
                         <ImagePlaceholder
                             small={false}
                             size="765 x 850"
+                            images={images}
+                            setSelectedImage={setSelectedImage}
+                            setOpenImageModal={setOpenImageModal}
                             onImageChange={handleImageChange}
                             onRemove={handleImageRemove}
+                            uploadLoader={uploadLoader}
                             index={0}
                         />
                     )}
@@ -187,15 +198,18 @@ const Page = () => {
                             <ImagePlaceholder
                                 small
                                 size="765 x 850"
+                                images={images}
+                                setSelectedImage={setSelectedImage}
+                                setOpenImageModal={setOpenImageModal}
                                 onImageChange={handleImageChange}
                                 onRemove={handleImageRemove}
+                                uploadLoader={uploadLoader}
                                 index={index + 1}
                                 key={index}
                             />
                         ))}
                     </div>
                 </div>
-
                 <div className="w-full md:w-[65%] space-y-2">
                     <div className="w-full mb-4">
                         <Input
@@ -550,6 +564,24 @@ const Page = () => {
                     </div>
                 </div>
             </div>
+            {openImageModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-white font-Poppins">Enhance Image</h3>
+                            <button
+                                className="text-slate-400 hover:text-white transition-colors"
+                                onClick={() => setOpenImageModal(!openImageModal)}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-black">
+                            <Image fill src={selectedImage} alt="Product Image" className="object-cover" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </form>
     )
 }

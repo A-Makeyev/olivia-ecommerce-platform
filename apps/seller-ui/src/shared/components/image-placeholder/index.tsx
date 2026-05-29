@@ -6,9 +6,12 @@ import Image from 'next/image'
 interface ImagePlaceholderProps {
     size?: string
     small?: boolean
+    images: any
     onRemove?: (index: number) => void
+    uploadLoader: boolean
     onImageChange: (file: File | null, index: number) => void
-    setOpenImageModal?: (openImageModal: boolean) => void
+    setSelectedImage: (selectedImage: string) => void
+    setOpenImageModal: (openImageModal: boolean) => void
     defaultImage?: string | null
     index?: any
 }
@@ -16,8 +19,11 @@ interface ImagePlaceholderProps {
 const ImagePlaceholder = ({
     small,
     size,
+    images,
     onRemove,
+    uploadLoader,
     onImageChange,
+    setSelectedImage,
     setOpenImageModal,
     defaultImage = null,
     index = null
@@ -46,15 +52,20 @@ const ImagePlaceholder = ({
                 <div className="absolute flex gap-2 right-2 top-2 z-10">
                     <button 
                         type="button" 
-                        onClick={() => setOpenImageModal?.(true)}
                         className="p-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded shadow-lg cursor-pointer flex items-center justify-center"
+                        disabled={uploadLoader}
+                        onClick={() => {
+                            setSelectedImage(images[index].file_url)
+                            setOpenImageModal(true)
+                        }}
                     >
                         <WandSparkles size={15} />
                     </button>
                     <button 
                         type="button" 
-                        onClick={() => onRemove?.(index!)} 
                         className="p-2 bg-red-600 hover:bg-red-500 transition-colors rounded shadow-lg cursor-pointer flex items-center justify-center"
+                        disabled={uploadLoader}
+                        onClick={() => onRemove?.(index!)} 
                     >
                         <X size={15} />
                     </button>
@@ -69,7 +80,6 @@ const ImagePlaceholder = ({
                     </label>
                 </div>
             )}
-
             {imagePreview ? (
                 <Image
                     fill

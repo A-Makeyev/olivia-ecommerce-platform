@@ -11,7 +11,7 @@ const DeleteDiscountCodeModal = ({ discount, onClose, onConfirm, isPending, isEr
 }) => {
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white font-Poppins">Confirm Delete</h3>
                     <button
