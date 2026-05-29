@@ -15,13 +15,19 @@ import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
+
+interface UploadedImage {
+    fileId: string
+    file_url: string
+}
+
 const Page = () => {
     const [isChanged, setIsChanged] = useState(true)
     const [loading, setLoading] = useState(false)
     const [isCodOpen, setIsCodOpen] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
-    const [images, setImages] = useState<(File | null)[]>([null])
+    const [images, setImages] = useState<(UploadedImage | null)[]>([null])
 
     const {
         register,
@@ -82,9 +88,15 @@ const Page = () => {
         try {
             const fileName = await convertFileToBase64(file)
             const res = await axiosInstance.post('/product/api/upload-product-image', { fileName })
+            
+            const uploadedImage: UploadedImage = {
+                fileId: res.data.fileId,
+                file_url: res.data.file_url
+            }
+
             const updatedImages = [...images]
 
-            updatedImages[index] = res.data.file_url
+            updatedImages[index] = uploadedImage
 
             if (index === images.length - 1 && updatedImages.length < 8) {
                 updatedImages.push(null)
@@ -102,8 +114,12 @@ const Page = () => {
             const updatedImages = [...images]
             const imageToDelete = updatedImages[index]
             
-            if (imageToDelete && typeof imageToDelete === 'string') {
-                //await axiosInstance.delete(`/product/api/delete-product-image/${imageToDelete}`)
+            if (imageToDelete && typeof imageToDelete === 'object') {
+                await axiosInstance.delete('/product/api/delete-product-image', { 
+                    data: { 
+                        fileId: imageToDelete.fileId!
+                    } 
+                })
             }
 
             updatedImages.splice(index, 1)

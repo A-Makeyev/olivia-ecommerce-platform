@@ -131,8 +131,8 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
   try {
     const { fileName } = req.body
 
-    if (!fileName) {
-      return next(new ValidationError('No image provided'))
+    if (!fileName.includes('data:image')) {
+      return next(new ValidationError('Invalid file type'))
     }
 
     const uploadedFile = await imagekit.upload({
@@ -144,7 +144,7 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
     res.status(201).json({
       success: true,
       file_url: uploadedFile.url,
-      fileName: uploadedFile.fileId
+      fileId: uploadedFile.fileId
     })  
   } catch(err) {
     return next(err)
@@ -153,7 +153,14 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
 
 export const deleteProductImage = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    
+    const { fileId } = req.body
+    const deletedFile = await imagekit.deleteFile(fileId)
+
+    res.status(200).json({
+      success: true,
+      deletedFile
+    })
+
   } catch(err) {
     return next(err)
   }
