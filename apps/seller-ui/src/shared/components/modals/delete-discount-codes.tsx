@@ -15,7 +15,7 @@ const DeleteDiscountCodeModal = ({ discount, onClose, onConfirm, isPending, isEr
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white font-Poppins">Confirm Delete</h3>
                     <button
-                        className="text-slate-400 hover:text-white transition-colors"
+                        className="text-white hover:text-slate-300 transition-colors"
                         onClick={onClose}
                         disabled={isPending}
                     >

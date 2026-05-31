@@ -566,17 +566,17 @@ const Page = () => {
             </div>
             {openImageModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm">
+                    <div className="w-full max-w-2xl p-6 bg-slate-900 border border-slate-800 rounded-md">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold text-white font-Poppins">Enhance Image</h3>
                             <button
-                                className="text-slate-400 hover:text-white transition-colors"
-                                onClick={() => setOpenImageModal(!openImageModal)}
+                                className="text-white hover:text-slate-300 transition-colors"
+                                onClick={() => setOpenImageModal(false)}
                             >
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-black">
+                        <div className="relative w-full h-[420px] rounded-md overflow-hidden">
                             <Image fill src={selectedImage} alt="Product Image" className="object-cover" />
                         </div>
                     </div>

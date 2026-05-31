@@ -85,12 +85,12 @@ const ImagePlaceholder = ({
                     fill
                     src={imagePreview}
                     alt="Image Preview"
-                    className="w-full h-full object-cover rounded-lg"
+                    className="object-contain"
                 />
             ) : (
                 <label 
                     htmlFor={`image-upload-${index}`}
-                    className="flex flex-col items-center justify-center w-full h-full rounded-lg cursor-pointer"
+                    className="flex flex-col items-center justify-center w-full h-full rounded-md cursor-pointer"
                 >
                     <p className={`font-semibold text-slate-400 ${small ? "text-xl" : "text-3xl"}`}>
                         {size}
