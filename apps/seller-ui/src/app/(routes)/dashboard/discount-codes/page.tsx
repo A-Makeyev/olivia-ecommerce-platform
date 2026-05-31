@@ -198,12 +198,12 @@ const Page = () => {
                 )}
             </div>
             {showModal && (
-                <div className="flex items-center justify-center fixed w-full h-full top-0 left-0 text-white bg-black/60 backdrop-blur-sm z-50 p-4">
-                    <div className="relative p-6 w-full max-w-[450px] bg-black border border-slate-800 rounded-2xl shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center pb-4">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="w-full max-w-[450px] p-6 bg-slate-900 border border-slate-800 rounded-md">
+                        <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold text-white font-Poppins">New Discount Code</h3>
                             <button
-                                className="text-slate-400 hover:text-white transition-colors"
+                                className="text-white hover:text-slate-300 transition-colors"
                                 onClick={() => setShowModal(false)}
                             >
                                 <X size={20} />
@@ -213,8 +213,9 @@ const Page = () => {
                             <Input 
                                 size="sm"
                                 label="Name"
-                                icon={<Tag />}
+                                labelTheme="dim"
                                 placeholder="Name"
+                                icon={<Tag />}
                                 error={errors.public_name?.message}
                                 {...register('public_name', { 
                                     required: 'Name is required',
@@ -232,25 +233,18 @@ const Page = () => {
                                 control={control}
                                 render={({ field: { onBlur, ref, ...rest } }) => (
                                     <div className="relative my-2">
-                                        <select
-                                            {...rest}
-                                            ref={ref}
-                                            className="peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20"
-                                            onClick={() => setIsTypeOpen(prev => !prev)}
-                                            onBlur={() => { setIsTypeOpen(false); onBlur() }}
-                                        >
-                                            <option value="percentage" className="bg-slate-900">Percentage (%)</option>
-                                            <option value="fixed" className="bg-slate-900">Fixed Amount ($)</option>
-                                        </select>
-                                        <div className="absolute top-[10px] left-3 text-slate-400 pointer-events-none z-30 peer-focus:text-white transition-colors">
-                                            <Percent size={16} />
-                                        </div>
-                                        <label className={`absolute transition-all duration-300 ease-out pointer-events-none z-30 bg-black px-1.5 peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white ${rest.value ? '-top-3 left-3 text-sm text-white' : 'top-2 left-9 text-sm text-slate-400'}`}>
-                                            Discount Type
-                                        </label>
-                                        <div className={`absolute top-[9px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isTypeOpen ? 'rotate-180' : 'rotate-0'}`}>
-                                            <ChevronDown size={20} />
-                                        </div>
+                                    <Input
+                                        type="select"
+                                        size="sm"
+                                        label="Discount Type"
+                                        labelTheme="dim"
+                                        icon={<Percent />}
+                                        value={watch('discountType')}
+                                        {...register('discountType')}
+                                    >
+                                        <option value="percentage" className="bg-slate-900">Percentage (%)</option>
+                                        <option value="fixed" className="bg-slate-900">Fixed Amount ($)</option>
+                                    </Input>
                                     </div>
                                 )}
                             />
@@ -258,8 +252,9 @@ const Page = () => {
                                 type="number"
                                 size="sm"
                                 label="Value"
-                                icon={<Coins />}
+                                labelTheme="dim"
                                 placeholder="Value"
+                                icon={<Coins />}
                                 min={1}
                                 className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 error={errors.discountValue?.message}
@@ -279,8 +274,9 @@ const Page = () => {
                              <Input 
                                  size="sm"
                                  label="Code"
-                                 icon={<TicketPercent />}
+                                 labelTheme="dim"
                                  placeholder="Code"
+                                 icon={<TicketPercent />}
                                  error={errors.discountCode?.message}
                                  {...register('discountCode', { 
                                     required: 'Code is required',
