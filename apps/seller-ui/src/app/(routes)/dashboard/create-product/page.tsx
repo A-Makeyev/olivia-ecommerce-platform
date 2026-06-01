@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X, Wand2, Loader } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
@@ -15,6 +15,7 @@ import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { enhancements } from 'apps/seller-ui/src/utils/imagekit-enhancement'
 
 
 interface UploadedImage {
@@ -26,11 +27,14 @@ const Page = () => {
     const [loading, setLoading] = useState(false)
     const [isChanged, setIsChanged] = useState(true)
     const [isCodOpen, setIsCodOpen] = useState(false)
+    const [processing, setProcessing] = useState(false)
+    const [displayImage, setDisplayImage] = useState('')
     const [selectedImage, setSelectedImage] = useState('')
     const [uploadLoader, setUploadLoader] = useState(false)
     const [openImageModal, setOpenImageModal] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
+    const [activeEffect, setActiveEffect] = useState<string | null>(null)
     const [images, setImages] = useState<(UploadedImage | null)[]>([null])
 
     const {
@@ -131,7 +135,7 @@ const Page = () => {
 
             updatedImages.splice(index, 1)
 
-            if (!updatedImages.includes(null) && updatedImages.length <8) {
+            if (!updatedImages.includes(null) && updatedImages.length < 8) {
                 updatedImages.push(null)
             }
 
@@ -140,6 +144,39 @@ const Page = () => {
         } catch(err) {
             toast.error('Failed to remove image. Please try again')
         }
+    }
+
+    const applyTransformation = async (transformation: string) => {
+        if (!selectedImage || processing) return
+
+        setProcessing(true)
+        setActiveEffect(transformation)
+
+        try {
+            const baseUrl = selectedImage.split('?')[0]
+            const transformUrl = `${baseUrl}?tr=${transformation}`
+
+            await new Promise<void>((resolve, reject) => {
+                const img = new window.Image()
+                img.src = transformUrl
+                img.onload = () => resolve()
+                img.onerror = () => reject(new Error('Image failed to load'))
+            })
+
+            setSelectedImage(transformUrl)
+            setDisplayImage(transformUrl)
+        } catch(err) {
+            toast.error('Failed to enhance. Please try again')
+            console.log(err)
+        } finally {
+            setProcessing(false)
+        }
+    }
+
+    const handleSelectImage = (url: string) => {
+        setSelectedImage(url)
+        setDisplayImage(url)
+        setActiveEffect(null)
     }
 
     const handleSaveDraft = () => { }
@@ -185,7 +222,7 @@ const Page = () => {
                             small={false}
                             size="765 x 850"
                             images={images}
-                            setSelectedImage={setSelectedImage}
+                            setSelectedImage={handleSelectImage}
                             setOpenImageModal={setOpenImageModal}
                             onImageChange={handleImageChange}
                             onRemove={handleImageRemove}
@@ -199,7 +236,7 @@ const Page = () => {
                                 small
                                 size="765 x 850"
                                 images={images}
-                                setSelectedImage={setSelectedImage}
+                                setSelectedImage={handleSelectImage}
                                 setOpenImageModal={setOpenImageModal}
                                 onImageChange={handleImageChange}
                                 onRemove={handleImageRemove}
@@ -568,7 +605,10 @@ const Page = () => {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="w-full max-w-2xl p-6 bg-slate-900 border border-slate-800 rounded-md">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-white font-Poppins">Enhance Image</h3>
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 font-Poppins">
+                                <Wand2 size={20} />
+                                Image Enhancements
+                            </h3>
                             <button
                                 className="text-white hover:text-slate-300 transition-colors"
                                 onClick={() => setOpenImageModal(false)}
@@ -577,8 +617,41 @@ const Page = () => {
                             </button>
                         </div>
                         <div className="relative w-full h-[420px] rounded-md overflow-hidden">
-                            <Image fill src={selectedImage} alt="Product Image" className="object-cover" />
+                            <Image
+                                fill
+                                src={displayImage || selectedImage}
+                                alt="Product Image"
+                                className="object-cover"
+                            />
+                            {processing && (
+                                <div className="absolute inset-0 z-10 rounded-md overflow-hidden">
+                                    <div className="absolute inset-0 bg-black/50" />
+                                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                    <div className="absolute inset-0 z-20 flex items-center justify-center">
+                                        <Loader size={36} className="animate-spin text-[#80DEEA]" />
+                                    </div>
+                                </div>
+                            )}
                         </div>
+                        {selectedImage && (
+                            <div className="mt-4 space-y-2">
+                                <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-auto">
+                                    {enhancements?.map(({ label, effect }) => (
+                                        <button
+                                            key={effect}
+                                            disabled={processing}
+                                            onClick={() => applyTransformation(effect)}
+                                            className={`flex justify-center items-center gap-2 p-2 text-sm font-semibold rounded-md transition 
+                                                ${activeEffect === effect ? "text-black bg-cyan-500 hover:bg-cyan-400" : "bg-slate-800 hover:bg-slate-700 text-slate-300"}
+                                                disabled:opacity-50 disabled:cursor-not-allowed
+                                            `}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

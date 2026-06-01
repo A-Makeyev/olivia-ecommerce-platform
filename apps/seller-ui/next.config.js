@@ -11,8 +11,11 @@ const nextConfig = {
     svgr: false,
   },
   images: {
+    loader: "default",
+    unoptimized: true,
     remotePatterns: [
       {
+        protocol: "https",
         hostname: 'ik.imagekit.io',
       },
     ],
@@ -24,4 +27,3 @@ const plugins = [
 ]
 
 module.exports = composePlugins(...plugins)(nextConfig)
-
