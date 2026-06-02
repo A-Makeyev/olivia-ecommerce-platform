@@ -1,8 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
+import { enhancements } from 'apps/seller-ui/src/utils/imagekit-enhancement'
 import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X, Wand2, Loader } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
@@ -15,15 +17,14 @@ import SizeSelector from 'packages/components/size-selector'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
-import { enhancements } from 'apps/seller-ui/src/utils/imagekit-enhancement'
-
 
 interface UploadedImage {
-    fileId: string
-    file_url: string
+    file_id: string
+    url: string
 }
 
 const Page = () => {
+    const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [isChanged, setIsChanged] = useState(true)
     const [isCodOpen, setIsCodOpen] = useState(false)
@@ -76,10 +77,6 @@ const Page = () => {
         return selectedCategory ? subCategories[selectedCategory] || [] : []
     }, [selectedCategory, subCategories])
 
-    const onSubmit = (data: any) => {
-        console.log(data)
-    }
-
     const convertFileToBase64 = (file: File) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
@@ -99,8 +96,8 @@ const Page = () => {
             const res = await axiosInstance.post('/product/api/upload-product-image', { fileName })
             
             const uploadedImage: UploadedImage = {
-                fileId: res.data.fileId,
-                file_url: res.data.file_url
+                file_id: res.data.fileId,
+                url: res.data.file_url
             }
 
             const updatedImages = [...images]
@@ -125,10 +122,10 @@ const Page = () => {
             const updatedImages = [...images]
             const imageToDelete = updatedImages[index]
             
-            if (imageToDelete && typeof imageToDelete === 'object') {
+            if (imageToDelete && typeof imageToDelete === 'object' && 'file_id' in imageToDelete) {
                 await axiosInstance.delete('/product/api/delete-product-image', { 
                     data: { 
-                        fileId: imageToDelete.fileId!
+                        file_id: imageToDelete.file_id
                     } 
                 })
             }
@@ -141,8 +138,8 @@ const Page = () => {
 
             setImages(updatedImages)
             setValue('images', updatedImages)
-        } catch(err) {
-            toast.error('Failed to remove image. Please try again')
+        } catch(err: any) {
+            toast.error(err?.response?.data?.message || 'Failed to remove image. Please try again')
         }
     }
 
@@ -181,8 +178,29 @@ const Page = () => {
 
     const handleSaveDraft = () => { }
 
+    const onSubmit = async (data: any) => {
+        setLoading(true)
+
+        try {
+            await axiosInstance.post('/product/api/create-product', data)
+            router.push('/dashboard/all-products')
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Failed to create product. Please try again')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full mx-auto p-8 text-white shadow-lg rounded-lg">
+        <form 
+            className="w-full mx-auto p-8 text-white shadow-lg rounded-lg"
+            onSubmit={handleSubmit(onSubmit)} 
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+                    e.preventDefault()
+                }
+            }}
+        >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-semibold text-white font-Poppins">
@@ -250,10 +268,10 @@ const Page = () => {
                 <div className="w-full md:w-[65%] space-y-2">
                     <div className="w-full mb-4">
                         <Input
+                            required
                             size="sm"
                             label="Product Title"
                             icon={<Package size={20} />}
-                            placeholder="Product Title"
                             error={errors.title?.message as string}
                             {...register('title', { required: 'Product title is required' })}
                         />
@@ -273,6 +291,7 @@ const Page = () => {
                                         <div className="relative my-2">
                                             <select
                                                 {...rest}
+                                                required
                                                 ref={ref}
                                                 className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
                                                 onClick={() => setIsCategoryOpen(prev => !prev)}
@@ -287,7 +306,7 @@ const Page = () => {
                                                 <LayoutGrid size={16} />
                                             </div>
                                             <label className={`absolute transition-all duration-300 ease-out pointer-events-none z-30 bg-black px-1.5 peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white ${rest.value ? '-top-3 left-3 text-sm text-white' : 'top-2 left-9 text-sm text-slate-400'}`}>
-                                                Category
+                                                Category <span className="text-red-500">*</span>
                                             </label>
                                             <div className={`absolute top-[9px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isCategoryOpen ? 'rotate-180' : 'rotate-0'}`}>
                                                 <ChevronDown size={20} />
@@ -307,13 +326,14 @@ const Page = () => {
                                 <p className="text-red-500 text-sm mt-2">Failed to load category</p>
                             ) : (
                                 <Controller
-                                    name="subCategories"
+                                    name="subCategory"
                                     control={control}
                                     rules={{ required: "Sub Category is required" }}
                                     render={({ field: { onBlur, ref, ...rest } }) => (
                                         <div className="relative my-2">
                                             <select
                                                 {...rest}
+                                                required
                                                 ref={ref}
                                                 className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
                                                 onClick={() => setIsSubCategoryOpen(prev => !prev)}
@@ -328,7 +348,7 @@ const Page = () => {
                                                 <Layers size={16} />
                                             </div>
                                             <label className={`absolute transition-all duration-300 ease-out pointer-events-none z-30 bg-black px-1.5 peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white ${rest.value ? '-top-3 left-3 text-sm text-white' : 'top-2 left-9 text-sm text-slate-400'}`}>
-                                                Sub Category
+                                                Sub Category <span className="text-red-500">*</span>
                                             </label>
                                             <div className={`absolute top-[9px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isSubCategoryOpen ? 'rotate-180' : 'rotate-0'}`}>
                                                 <ChevronDown size={20} />
@@ -337,8 +357,8 @@ const Page = () => {
                                     )}
                                 />
                             )}
-                            {errors.subCategories && (
-                                <p className="mt-1 text-red-500 text-sm font-medium">{errors.subCategories.message as string}</p>
+                            {errors.subCategory && (
+                                <p className="mt-1 text-red-500 text-sm font-medium">{errors.subCategory.message as string}</p>
                             )}
                         </div>
                     </div>
@@ -346,22 +366,13 @@ const Page = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input
-                                size="sm"
-                                label="Brand"
-                                icon={<Award size={20} />}
-                                placeholder="Product Brand"
-                                error={errors.brand?.message as string}
-                                {...register('brand', { required: 'Brand is required' })}
-                            />
-                        </div>
-                        <div className="col-span-2 md:col-span-1">
-                            <Input
+                                required
                                 size="sm"
                                 label="Stock"
                                 icon={<Boxes size={20} />}
-                                placeholder="Stock"
                                 error={errors.stock?.message as string}
                                 {...register('stock', {
+                                    required: 'Stock is required',
                                     valueAsNumber: true,
                                     min: { value: 0, message: 'Stock must be at least 0' },
                                     max: { value: 1000, message: 'Stock must be less than 1000' },
@@ -373,17 +384,26 @@ const Page = () => {
                                 })}
                             />
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input
                                 size="sm"
+                                label="Brand"
+                                icon={<Award size={20} />}
+                                error={errors.brand?.message as string}
+                                {...register('brand')}
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
+                            <Input
+                                required
+                                size="sm"
                                 label="Regular Price"
                                 icon={<Banknote size={20} />}
-                                placeholder="Regular Price"
                                 error={errors.regular_price?.message as string}
                                 {...register('regular_price', {
+                                    required: 'Regular price is required',
                                     valueAsNumber: true,
                                     min: { value: 1, message: 'Minimum price is at least 1' },
                                     validate: (value) => !isNaN(value) || 'Please enter a valid number'
@@ -395,13 +415,11 @@ const Page = () => {
                                 size="sm"
                                 label="Sale Price"
                                 icon={<Coins size={20} />}
-                                placeholder="Sale Price"
                                 error={errors.sale_price?.message as string}
                                 {...register('sale_price', {
                                     valueAsNumber: true,
                                     min: { value: 1, message: 'Minimum price is at least 1' },
                                     validate: (value) => {
-                                        if (isNaN(value)) return 'Please enter a valid number'
                                         if (regularPrice && value >= regularPrice) return 'Sale price must be less than regular price'
                                         return true
                                     }
@@ -412,10 +430,10 @@ const Page = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input
+                                required
                                 size="sm"
                                 label="Tags (comma separated)"
                                 icon={<Tag size={20} />}
-                                placeholder="Product Tags"
                                 error={errors.tags?.message as string}
                                 {...register('tags', { required: 'One or more tags separated by comma is required' })}
                             />
@@ -425,19 +443,18 @@ const Page = () => {
                                 size="sm"
                                 label="Warranty"
                                 icon={<ShieldCheck size={20} />}
-                                placeholder="Warranty"
                                 error={errors.warranty?.message as string}
-                                {...register('warranty', { required: 'Warranty is required' })}
+                                {...register('warranty')}
                             />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input
+                                required
                                 size="sm"
                                 label="Product URL (Slug)"
                                 icon={<Link2 size={20} />}
-                                placeholder="Product Slug"
                                 error={errors.slug?.message as string}
                                 {...register('slug', {
                                     required: 'Slug is required',
@@ -455,10 +472,8 @@ const Page = () => {
                                 size="sm"
                                 label="Video URL"
                                 icon={<Video size={20} />}
-                                placeholder="Video URL"
                                 error={errors.video_url?.message as string}
                                 {...register('video_url', {
-                                    required: 'Video URL is required',
                                     pattern: {
                                         value: /^((http(s?):\/\/)?(www.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]*)?)$/,
                                         message: 'Invalid video URL'
@@ -469,13 +484,13 @@ const Page = () => {
                     </div>
                     <div className="w-full !mt-4">
                         <Input
+                            required
                             size="sm"
                             type="textarea"
                             label="Product Description"
                             icon={<ClipboardPen size={20} />}
-                            placeholder="Product Description"
-                            error={errors.description?.message as string}
-                            {...register('description', {
+                            error={errors.short_description?.message as string}
+                            {...register('short_description', {
                                 required: 'Product description is required',
                                 validate: (value) => {
                                     const words = value.trim().split(/\s+/).length
@@ -487,33 +502,31 @@ const Page = () => {
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className='w-full md:w-1/2'>
                             <label className="font-bold text-slate-300 text-base tracking-tight mb-3 block">
-                                Product Details
+                                Product Details <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="details"
+                                name="detailed_description"
                                 control={control}
                                 rules={{
                                     required: 'Details are required',
                                     validate: (value) => {
                                         const words = value?.split(/\s+/).filter((word: string) => word).length
-                                        return words >= 100 || `Details must be at least 100 words. Current: ${words}`
+                                        return words <= 100 || `Details must be less than 100 words. Current: ${words}`
                                     }
                                 }}
                                 render={({ field }) => (
                                     <RichTextEditor value={field.value} onChange={field.onChange} />
                                 )}
                             />
-                            {errors.specifications && (
+                            {errors.detailed_description && (
                                 <p className="mt-1 text-red-500 text-sm font-medium">
-                                    {errors.specifications.message as string}
+                                    {errors.detailed_description.message as string}
                                 </p>
                             )}
-
                             <div className="pt-4">
                                 <CustomProperties control={control} errors={errors} />
                             </div>
                         </div>
-
                         <div className="w-full md:w-1/2 flex flex-col">
                             <ColorSelector control={control} errors={errors} />
                             <div className="-mt-2">
@@ -532,7 +545,7 @@ const Page = () => {
                                         className="w-[85%] min-h-[32px] pl-8 pr-8 py-1 appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white relative z-20 cursor-pointer"
                                         onClick={() => setIsCodOpen(prev => !prev)}
                                         {...(() => {
-                                            const { onBlur, ...rest } = register('cash_on_delivery', { required: 'Cash on delivery is required' })
+                                            const { onBlur, ...rest } = register('cash_on_delivery')
                                             return {
                                                 ...rest,
                                                 onBlur: (e: React.FocusEvent<HTMLSelectElement>) => {
@@ -578,14 +591,14 @@ const Page = () => {
                                                 key={code.id}
                                                 type="button"
                                                 className={`px-3 py-1 text-sm font-semibold border rounded-md transition duration-100
-                                                    ${watch('discountCodes')?.includes(code.id) ? "bg-cyan-500 text-black scale-105" : "text-slate-300 hover:bg-slate-700"}
+                                                    ${watch('discount_codes')?.includes(code.id) ? "bg-cyan-500 text-black scale-105" : "text-slate-300 hover:bg-slate-700"}
                                                 `}
                                                 onClick={() => {
-                                                    const currentSelection = watch('discountCodes') || []
+                                                    const currentSelection = watch('discount_codes') || []
                                                     const updatedSelection = currentSelection?.includes(code.id)
                                                         ? currentSelection.filter((id: string) => id !== code.id)
                                                         : [...currentSelection, code.id]
-                                                    setValue('discountCodes', updatedSelection, { shouldDirty: true })
+                                                    setValue('discount_codes', updatedSelection, { shouldDirty: true })
                                                 }}
                                             >
                                                 {code?.discountCode} - {code?.discountType === 'percentage' ? `${code?.discountValue}%` : `$${code?.discountValue}`}
@@ -628,7 +641,7 @@ const Page = () => {
                                     <div className="absolute inset-0 bg-black/50" />
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                                     <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                        <Loader size={36} className="animate-spin text-[#80DEEA]" />
+                                        <Loader2 size={36} className="animate-spin text-[#80DEEA]" />
                                     </div>
                                 </div>
                             )}

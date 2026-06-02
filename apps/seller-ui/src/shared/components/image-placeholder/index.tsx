@@ -85,7 +85,7 @@ const ImagePlaceholder = ({
                     fill
                     src={imagePreview}
                     alt="Image Preview"
-                    className="object-contain"
+                    className="object-cover rounded-md !cursor-default"
                 />
             ) : (
                 <label 

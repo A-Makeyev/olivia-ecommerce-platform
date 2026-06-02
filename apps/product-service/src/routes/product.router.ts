@@ -1,6 +1,14 @@
 import express, { Router } from 'express'
 import isAuthenticated from '@packages/middleware/is-authenticated'
-import { createDiscountCode, deleteDiscountCode, deleteProductImage, getCategories, getDiscountCodes, uploadProductImage } from '../controllers/product.controller'
+import { 
+    createDiscountCode, 
+    createProduct, 
+    deleteDiscountCode, 
+    deleteProductImage,
+    getCategories, 
+    getDiscountCodes, 
+    uploadProductImage 
+} from '../controllers/product.controller'
 
 
 const router: Router = express.Router()
@@ -8,8 +16,9 @@ const router: Router = express.Router()
 router.get('/get-categories', getCategories)
 router.get('/get-discount-codes', isAuthenticated, getDiscountCodes)
 router.post('/create-discount-code', isAuthenticated, createDiscountCode)
-router.delete('/delete-discount-code/:id', isAuthenticated, deleteDiscountCode)
 router.post('/upload-product-image', isAuthenticated, uploadProductImage)
+router.post('/create-product', isAuthenticated, createProduct)
+router.delete('/delete-discount-code/:id', isAuthenticated, deleteDiscountCode)
 router.delete('/delete-product-image', isAuthenticated, deleteProductImage)
 
 export default router

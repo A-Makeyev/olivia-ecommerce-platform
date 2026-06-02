@@ -8,6 +8,7 @@ interface BaseProps {
     className?: string
     icon?: React.ReactNode
     error?: string
+    required?: boolean
     size?: 'sm' | 'md' | 'lg'
     children?: React.ReactNode
 }
@@ -25,7 +26,7 @@ const themes = {
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, Props>(
-    ({ type = 'text', label, labelTheme = 'dark', className, icon, error, size = 'md', children, ...props }, ref) => {
+    ({ type = 'text', label, labelTheme = 'dark', className, icon, error, required, size = 'md', children, ...props }, ref) => {
         const isSm = size === 'sm'
         const isLg = size === 'lg'
         const theme = themes[labelTheme]
@@ -112,6 +113,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
                         {label && (
                             <label className={selectLabelStyle}>
                                 {label}
+                                {required && <span className="text-red-500 ml-1">*</span>}
                             </label>
                         )}
                         <div className={`absolute ${isSm ? 'top-[9px]' : isLg ? 'top-[22px]' : 'top-[16px]'} right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`}>
@@ -156,6 +158,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
                     {label && (
                         <label className={labelStyle}>
                             {label}
+                            {required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                     )}
                 </div>

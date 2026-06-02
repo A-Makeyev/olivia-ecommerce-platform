@@ -1,4 +1,4 @@
-12 35 00
+12 54 50
 
 npx create-nx-workspace@20.6.1 .
 npx nx add @nx/express
@@ -10,3 +10,4 @@ winget install --id Google.Antigravity --force
 
 
 [x] fix login at header & sub
+[x] create-product, validations, add comma seperated values, fix images upload and db
