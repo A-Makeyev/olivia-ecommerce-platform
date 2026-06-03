@@ -220,7 +220,7 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
       return next(new ValidationError('Slug already exists'))
     }
 
-    await prisma.products.create({
+    const newProduct = await prisma.products.create({
       data: {
         title,
         slug,
@@ -254,8 +254,9 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
       include: { images: true }
     })
 
-    return res.status(201).json({
-      success: true
+    res.status(201).json({
+      success: true,
+      newProduct
     })
   } catch (err) {
     return next(err)

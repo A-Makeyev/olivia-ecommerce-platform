@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { PencilIcon, WandSparkles, X } from 'lucide-react'
+import { PencilIcon, WandSparkles, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
 
@@ -8,7 +7,7 @@ interface ImagePlaceholderProps {
     small?: boolean
     images: any
     onRemove?: (index: number) => void
-    uploadLoader: boolean
+    uploadingIndex: number | null
     onImageChange: (file: File | null, index: number) => void
     setSelectedImage: (selectedImage: string) => void
     setOpenImageModal: (openImageModal: boolean) => void
@@ -21,21 +20,25 @@ const ImagePlaceholder = ({
     size,
     images,
     onRemove,
-    uploadLoader,
+    uploadingIndex,
     onImageChange,
     setSelectedImage,
     setOpenImageModal,
     defaultImage = null,
     index = null
 }: ImagePlaceholderProps) => {
-    const [imagePreview, setImagePreview] = useState<string | null>(defaultImage)
+    const currentImage = images[index]
+    const imagePreview = currentImage?.url || defaultImage
+    const isUploading = uploadingIndex === index
+    const isAnyUploading = uploadingIndex !== null
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
         if (file) {
-            setImagePreview(URL.createObjectURL(file))
             onImageChange(file, index!)
         }
+        // Reset input value so the same file can be re-selected
+        event.target.value = ''
     }
     return (
         <div className={`flex flex-col justify-center items-center relative w-full bg-[#1E1E1E] border-slate-600 rounded-lg cursor-pointer 
@@ -46,16 +49,17 @@ const ImagePlaceholder = ({
                 accept="image/*" 
                 className="hidden"
                 id={`image-upload-${index}`}
-                onChange={handleFileChange} 
+                onChange={handleFileChange}
+                disabled={isAnyUploading}
              />
             {imagePreview ? (
                 <div className="absolute flex gap-2 right-2 top-2 z-10">
                     <button 
                         type="button" 
                         className="p-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded shadow-lg cursor-pointer flex items-center justify-center"
-                        disabled={uploadLoader}
+                        disabled={isAnyUploading}
                         onClick={() => {
-                            setSelectedImage(images[index].file_url)
+                            setSelectedImage(currentImage.url)
                             setOpenImageModal(true)
                         }}
                     >
@@ -64,7 +68,7 @@ const ImagePlaceholder = ({
                     <button 
                         type="button" 
                         className="p-2 bg-red-600 hover:bg-red-500 transition-colors rounded shadow-lg cursor-pointer flex items-center justify-center"
-                        disabled={uploadLoader}
+                        disabled={isAnyUploading}
                         onClick={() => onRemove?.(index!)} 
                     >
                         <X size={15} />
@@ -74,7 +78,7 @@ const ImagePlaceholder = ({
                 <div className="absolute flex gap-2 right-2 top-2 z-10">
                     <label 
                         htmlFor={`image-upload-${index}`} 
-                        className="p-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded shadow-lg cursor-pointer flex items-center justify-center"
+                        className={`p-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded shadow-lg flex items-center justify-center ${isAnyUploading ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
                     >
                         <PencilIcon size={15} />
                     </label>
@@ -90,7 +94,7 @@ const ImagePlaceholder = ({
             ) : (
                 <label 
                     htmlFor={`image-upload-${index}`}
-                    className="flex flex-col items-center justify-center w-full h-full rounded-md cursor-pointer"
+                    className={`flex flex-col items-center justify-center w-full h-full rounded-md ${isAnyUploading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                     <p className={`font-semibold text-slate-400 ${small ? "text-xl" : "text-3xl"}`}>
                         {size}
@@ -99,6 +103,12 @@ const ImagePlaceholder = ({
                         Choose an image 
                     </p>
                 </label>
+            )}
+            {isUploading && (
+                <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-lg pointer-events-auto">
+                    <Loader2 size={small ? 24 : 38} className="animate-spin text-[#80DEEA]" />
+                    <span className="text-slate-400 text-xs mt-2 font-medium tracking-wide">Uploading</span>
+                </div>
             )}
         </div>
     )

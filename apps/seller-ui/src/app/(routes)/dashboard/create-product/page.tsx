@@ -31,7 +31,7 @@ const Page = () => {
     const [processing, setProcessing] = useState(false)
     const [displayImage, setDisplayImage] = useState('')
     const [selectedImage, setSelectedImage] = useState('')
-    const [uploadLoader, setUploadLoader] = useState(false)
+    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
     const [openImageModal, setOpenImageModal] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
@@ -89,7 +89,7 @@ const Page = () => {
     const handleImageChange = async (file: File | null, index: number) => {
         if (!file) return 
 
-        setUploadLoader(true)
+        setUploadingIndex(index)
 
         try {
             const fileName = await convertFileToBase64(file)
@@ -100,27 +100,27 @@ const Page = () => {
                 url: res.data.file_url
             }
 
-            const updatedImages = [...images]
+            setImages(prev => {
+                const updatedImages = [...prev]
+                updatedImages[index] = uploadedImage
 
-            updatedImages[index] = uploadedImage
+                if (index === prev.length - 1 && updatedImages.length < 8) {
+                    updatedImages.push(null)
+                }
 
-            if (index === images.length - 1 && updatedImages.length < 8) {
-                updatedImages.push(null)
-            }
-
-            setImages(updatedImages)
-            setValue('images', updatedImages)
+                setValue('images', updatedImages)
+                return updatedImages
+            })
         } catch(err) {
             toast.error('Failed to upload image. Please try again')
         } finally {
-            setUploadLoader(false)
+            setUploadingIndex(null)
         }
     }
 
     const handleImageRemove = async (index: number) => {
         try {
-            const updatedImages = [...images]
-            const imageToDelete = updatedImages[index]
+            const imageToDelete = images[index]
             
             if (imageToDelete && typeof imageToDelete === 'object' && 'file_id' in imageToDelete) {
                 await axiosInstance.delete('/product/api/delete-product-image', { 
@@ -130,14 +130,19 @@ const Page = () => {
                 })
             }
 
-            updatedImages.splice(index, 1)
+            setImages(prev => {
+                const updatedImages = [...prev]
+                updatedImages.splice(index, 1)
 
-            if (!updatedImages.includes(null) && updatedImages.length < 8) {
-                updatedImages.push(null)
-            }
+                if (updatedImages.length === 0 || !updatedImages.includes(null)) {
+                    if (updatedImages.length < 8) {
+                        updatedImages.push(null)
+                    }
+                }
 
-            setImages(updatedImages)
-            setValue('images', updatedImages)
+                setValue('images', updatedImages)
+                return updatedImages
+            })
         } catch(err: any) {
             toast.error(err?.response?.data?.message || 'Failed to remove image. Please try again')
         }
@@ -183,7 +188,11 @@ const Page = () => {
 
         try {
             await axiosInstance.post('/product/api/create-product', data)
-            router.push('/dashboard/all-products')
+
+            toast.success('Product created successfully')
+            setTimeout(() => {
+                router.push('/dashboard/all-products')
+            }, 2500)
         } catch (err: any) {
             toast.error(err?.response?.data?.message || 'Failed to create product. Please try again')
         } finally {
@@ -244,7 +253,7 @@ const Page = () => {
                             setOpenImageModal={setOpenImageModal}
                             onImageChange={handleImageChange}
                             onRemove={handleImageRemove}
-                            uploadLoader={uploadLoader}
+                            uploadingIndex={uploadingIndex}
                             index={0}
                         />
                     )}
@@ -258,7 +267,7 @@ const Page = () => {
                                 setOpenImageModal={setOpenImageModal}
                                 onImageChange={handleImageChange}
                                 onRemove={handleImageRemove}
-                                uploadLoader={uploadLoader}
+                                uploadingIndex={uploadingIndex}
                                 index={index + 1}
                                 key={index}
                             />
@@ -459,7 +468,7 @@ const Page = () => {
                                 {...register('slug', {
                                     required: 'Slug is required',
                                     pattern: {
-                                        value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                                        value: /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/,
                                         message: 'Slug must be lowercase with letters, numbers, and hyphens'
                                     },
                                     minLength: { value: 3, message: 'Slug must be at least 3 characters long' },
@@ -641,7 +650,7 @@ const Page = () => {
                                     <div className="absolute inset-0 bg-black/50" />
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                                     <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                        <Loader2 size={36} className="animate-spin text-[#80DEEA]" />
+                                        <Loader size={36} className="animate-spin text-[#80DEEA]" />
                                     </div>
                                 </div>
                             )}

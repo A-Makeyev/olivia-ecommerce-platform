@@ -10,11 +10,11 @@ const CustomSpecifications = ({ control, errors }: any) => {
         name: 'custom_specifications'
     })
 
-    useEffect(() => {
-        if (fields.length === 0) {
-            append({ name: '', value: '' })
-        }
-    }, [])
+    // useEffect(() => {
+    //     if (fields.length === 0) {
+    //         append({ name: '', value: '' })
+    //     }
+    // }, [])
 
     return (
         <div>

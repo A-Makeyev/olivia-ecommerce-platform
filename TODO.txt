@@ -1,4 +1,4 @@
-12 54 50
+12 55 50
 
 npx create-nx-workspace@20.6.1 .
 npx nx add @nx/express
@@ -11,3 +11,9 @@ winget install --id Google.Antigravity --force
 
 [x] fix login at header & sub
 [x] create-product, validations, add comma seperated values, fix images upload and db
+
+
+
+Creating the backend controller function: The logic to delete an image from the ImageKit storage is defined at (12:07:32 - 12:08:44).
+Defining the API route: The corresponding route for the deletion endpoint is added to the product routes at (12:08:44 - 12:09:50).
+Frontend logic and testing: The instructor implements the frontend trigger for deleting an image (12:09:50 - 12:10:57),
