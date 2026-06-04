@@ -1,20 +1,26 @@
-import { useEffect } from 'react'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { PlusCircle, Trash2 } from 'lucide-react'
 import Input from '../input'
 
 
-const CustomSpecifications = ({ control, errors }: any) => {
+const sanitize = (value: string) => value.replace(/[,\-~| ]/g, '')
+
+const CustomSpecifications = ({ control, errors, takenNames = [] }: any) => {
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'custom_specifications'
     })
 
-    // useEffect(() => {
-    //     if (fields.length === 0) {
-    //         append({ name: '', value: '' })
-    //     }
-    // }, [])
+    const watchedFields = useWatch({ control, name: 'custom_specifications' }) ?? []
+
+    const isDuplicateName = (name: string, currentIndex: number) => {
+        const lower = name.toLowerCase()
+        const dupeInSpecs = watchedFields.some((f: any, i: number) =>
+            i !== currentIndex && f?.name?.toLowerCase() === lower
+        )
+        const dupeInProps = takenNames.some((n: string) => n.toLowerCase() === lower)
+        return dupeInSpecs || dupeInProps
+    }
 
     return (
         <div>
@@ -42,13 +48,18 @@ const CustomSpecifications = ({ control, errors }: any) => {
                             <Controller 
                                 name={`custom_specifications.${index}.name`}
                                 control={control}
-                                rules={{ required: 'Specification name is required'}}
-                                render={({ field }) => (
+                                rules={{
+                                    required: 'Name is required',
+                                    validate: (val) => !isDuplicateName(val, index) || 'Name already exists'
+                                }}
+                                render={({ field, fieldState }) => (
                                     <Input 
                                         size="sm"
                                         label="Name"
                                         placeholder="Name"
                                         {...field}
+                                        onChange={(e: any) => field.onChange(sanitize(e.target.value))}
+                                        error={fieldState.error?.message}
                                     />
                                 )}
                             />
@@ -57,13 +68,15 @@ const CustomSpecifications = ({ control, errors }: any) => {
                             <Controller 
                                 name={`custom_specifications.${index}.value`}
                                 control={control}
-                                rules={{ required: 'Specification value is required'}}
-                                render={({ field }) => (
+                                rules={{ required: 'Value is required' }}
+                                render={({ field, fieldState }) => (
                                     <Input 
                                         size="sm"
                                         label="Value"
                                         placeholder="Value"
                                         {...field}
+                                        onChange={(e: any) => field.onChange(sanitize(e.target.value))}
+                                        error={fieldState.error?.message}
                                     />
                                 )}
                             />

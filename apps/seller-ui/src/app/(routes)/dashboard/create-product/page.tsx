@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 import { enhancements } from 'apps/seller-ui/src/utils/imagekit-enhancement'
-import { ChevronDown, ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X, Wand2, Loader } from 'lucide-react'
+import { ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X, Wand2, Loader, ChevronDown } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
 import ColorSelector from 'packages/components/color-selector'
 import CustomSpecifications from 'packages/components/custom-specifications'
@@ -31,12 +31,11 @@ const Page = () => {
     const [processing, setProcessing] = useState(false)
     const [displayImage, setDisplayImage] = useState('')
     const [selectedImage, setSelectedImage] = useState('')
-    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
     const [openImageModal, setOpenImageModal] = useState(false)
-    const [isCategoryOpen, setIsCategoryOpen] = useState(false)
-    const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false)
+    const [subCategoryTouched, setSubCategoryTouched] = useState(false)
     const [activeEffect, setActiveEffect] = useState<string | null>(null)
     const [images, setImages] = useState<(UploadedImage | null)[]>([null])
+    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
 
     const {
         register,
@@ -192,7 +191,7 @@ const Page = () => {
             toast.success('Product created successfully')
             setTimeout(() => {
                 router.push('/dashboard/all-products')
-            }, 2500)
+            }, 1500)
         } catch (err: any) {
             toast.error(err?.response?.data?.message || 'Failed to create product. Please try again')
         } finally {
@@ -290,88 +289,73 @@ const Page = () => {
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm mt-2">Failed to load sub category</p>
+                                <p className="text-red-500 text-sm mt-2">Failed to load categories</p>
                             ) : (
                                 <Controller
                                     name="category"
                                     control={control}
-                                    rules={{ required: "Category is required" }}
-                                    render={({ field: { onBlur, ref, ...rest } }) => (
-                                        <div className="relative my-2">
-                                            <select
-                                                {...rest}
-                                                required
-                                                ref={ref}
-                                                className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
-                                                onClick={() => setIsCategoryOpen(prev => !prev)}
-                                                onBlur={() => { setIsCategoryOpen(false); onBlur() }}
-                                            >
-                                                <option value="" hidden></option>
-                                                {categories?.map((category: string) => (
-                                                    <option key={category} value={category} className="bg-slate-900">{category}</option>
-                                                ))}
-                                            </select>
-                                            <div className="absolute top-[10px] left-3 text-slate-400 pointer-events-none z-30 peer-focus:text-white transition-colors">
-                                                <LayoutGrid size={16} />
-                                            </div>
-                                            <label className={`absolute transition-all duration-300 ease-out pointer-events-none z-30 bg-black px-1.5 peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white ${rest.value ? '-top-3 left-3 text-sm text-white' : 'top-2 left-9 text-sm text-slate-400'}`}>
-                                                Category <span className="text-red-500">*</span>
-                                            </label>
-                                            <div className={`absolute top-[9px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isCategoryOpen ? 'rotate-180' : 'rotate-0'}`}>
-                                                <ChevronDown size={20} />
-                                            </div>
-                                        </div>
+                                    rules={{ required: 'Category is required' }}
+                                    render={({ field }) => (
+                                        <Input
+                                            required
+                                            type="select"
+                                            size="sm"
+                                            label="Category"
+                                            icon={<LayoutGrid size={16} />}
+                                            error={errors.category?.message as string}
+                                            {...field}
+                                        >
+                                            <option value="" hidden></option>
+                                            {categories?.map((category: string) => (
+                                                <option key={category} value={category} className="bg-slate-900">{category}</option>
+                                            ))}
+                                        </Input>
                                     )}
                                 />
-                            )}
-                            {errors.category && (
-                                <p className="mt-1 text-red-500 text-sm font-medium">{errors.category.message as string}</p>
                             )}
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             {isLoading ? (
                                 <div className="w-full h-[38px] bg-slate-700 animate-pulse rounded-lg my-2" />
                             ) : isError ? (
-                                <p className="text-red-500 text-sm mt-2">Failed to load category</p>
+                                <p className="text-red-500 text-sm mt-2">Failed to load sub categories</p>
                             ) : (
                                 <Controller
                                     name="subCategory"
                                     control={control}
-                                    rules={{ required: "Sub Category is required" }}
-                                    render={({ field: { onBlur, ref, ...rest } }) => (
-                                        <div className="relative my-2">
-                                            <select
-                                                {...rest}
+                                    rules={{ required: 'Sub Category is required' }}
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <Input
                                                 required
-                                                ref={ref}
-                                                className='peer w-full pl-9 pr-10 py-1.5 min-h-[38px] appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white cursor-pointer relative z-20'
-                                                onClick={() => setIsSubCategoryOpen(prev => !prev)}
-                                                onBlur={() => { setIsSubCategoryOpen(false); onBlur() }}
+                                                type="select"
+                                                size="sm"
+                                                label="Sub Category"
+                                                icon={<Layers size={16} />}
+                                                error={errors.subCategory?.message as string}
+                                                disabled={!selectedCategory}
+                                                {...field}
                                             >
                                                 <option value="" hidden></option>
                                                 {subCategoriesOptions?.map((category: string) => (
                                                     <option key={category} value={category} className="bg-slate-900">{category}</option>
                                                 ))}
-                                            </select>
-                                            <div className="absolute top-[10px] left-3 text-slate-400 pointer-events-none z-30 peer-focus:text-white transition-colors">
-                                                <Layers size={16} />
-                                            </div>
-                                            <label className={`absolute transition-all duration-300 ease-out pointer-events-none z-30 bg-black px-1.5 peer-focus:-top-3 peer-focus:left-3 peer-focus:text-sm peer-focus:text-white ${rest.value ? '-top-3 left-3 text-sm text-white' : 'top-2 left-9 text-sm text-slate-400'}`}>
-                                                Sub Category <span className="text-red-500">*</span>
-                                            </label>
-                                            <div className={`absolute top-[9px] right-3 text-slate-400 pointer-events-none z-30 transition-transform ${isSubCategoryOpen ? 'rotate-180' : 'rotate-0'}`}>
-                                                <ChevronDown size={20} />
-                                            </div>
+                                            </Input>
+                                            {!selectedCategory && (
+                                                <div
+                                                    className="absolute inset-0 z-40 cursor-not-allowed"
+                                                    onClick={() => setSubCategoryTouched(true)}
+                                                />
+                                            )}
+                                            {!selectedCategory && subCategoryTouched && (
+                                                <p className="mt-1 text-yellow-500 text-sm font-medium">Please select a category first</p>
+                                            )}
                                         </div>
                                     )}
                                 />
                             )}
-                            {errors.subCategory && (
-                                <p className="mt-1 text-red-500 text-sm font-medium">{errors.subCategory.message as string}</p>
-                            )}
                         </div>
                     </div>
-
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
                             <Input
@@ -546,15 +530,13 @@ const Page = () => {
                                     Cash On Delivery
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute top-[9px] left-3 text-slate-400 pointer-events-none z-30">
-                                        <DollarSign size={14} />
-                                    </div>
-                                    <select
+                                    <Input
+                                        type="select"
+                                        size="sm"
+                                        icon={<DollarSign size={14} />}
                                         defaultValue="yes"
-                                        className="w-[85%] min-h-[32px] pl-8 pr-8 py-1 appearance-none outline-0 rounded-lg border border-slate-400 focus:border-[#80DEEA] transition-all duration-300 ease-out bg-transparent text-sm text-white relative z-20 cursor-pointer"
-                                        onClick={() => setIsCodOpen(prev => !prev)}
                                         {...(() => {
-                                            const { onBlur, ...rest } = register('cash_on_delivery')
+                                            const { onBlur, ...rest } = register('cash_on_delivery') as any
                                             return {
                                                 ...rest,
                                                 onBlur: (e: React.FocusEvent<HTMLSelectElement>) => {
@@ -566,10 +548,7 @@ const Page = () => {
                                     >
                                         <option value="yes" className="bg-slate-900">Yes</option>
                                         <option value="no" className="bg-slate-900">No</option>
-                                    </select>
-                                    <div className={`absolute top-[7px] left-[70%] lg:left-[73%] xl:left-[76%] text-slate-400 pointer-events-none z-30 transition-transform ${isCodOpen ? 'rotate-180' : 'rotate-0'}`}>
-                                        <ChevronDown size={18} />
-                                    </div>
+                                    </Input>
                                 </div>
                                 {errors.cash_on_delivery && (
                                     <p className="mt-2 text-red-500 font-medium text-sm">

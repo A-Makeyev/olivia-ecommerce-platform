@@ -4,10 +4,12 @@ import { PackageOpen, PlusCircle, X } from 'lucide-react'
 import Input from '../input'
 
 
+const sanitize = (value: string) => value.replace(/[,\-~| ]/g, '')
+
 const CustomProperties = ({ control, errors }: any) => {
     const [properties, setProperties] = useState<{ label: string, values: string[] }[]>([])
     const [newLabel, setNewLabel] = useState('')
-    const [newValue, setNewValue] = useState('')
+    const [newValues, setNewValues] = useState<Record<number, string>>({})
 
     return (
         <div>
@@ -23,20 +25,34 @@ const CustomProperties = ({ control, errors }: any) => {
 
                             const addProperty = () => {
                                 if (!newLabel.trim()) return
+                                if (properties.some(p => p.label.toLowerCase() === newLabel.toLowerCase())) return
                                 setProperties([...properties, { label: newLabel, values: [] }])
                                 setNewLabel('')
                             }
 
                             const addValue = (index: number) => {
-                                if (!newValue.trim()) return
+                                const val = newValues[index]?.trim()
+                                if (!val) return
+                                if (properties[index].values.some(v => v.toLowerCase() === val.toLowerCase())) return
                                 const updatedProperties = [...properties]
-                                updatedProperties[index].values.push(newValue)
+                                updatedProperties[index].values.push(val)
                                 setProperties(updatedProperties)
-                                setNewValue('')
+                                setNewValues(prev => ({ ...prev, [index]: '' }))
                             }
 
                             const removeProperty = (index: number) => {
                                 setProperties(properties.filter((_, i) => i !== index))
+                                setNewValues(prev => {
+                                    const next = { ...prev }
+                                    delete next[index]
+                                    return next
+                                })
+                            }
+
+                            const removeValue = (propIndex: number, vIndex: number) => {
+                                const updatedProperties = [...properties]
+                                updatedProperties[propIndex].values = updatedProperties[propIndex].values.filter((_, i) => i !== vIndex)
+                                setProperties(updatedProperties)
                             }
 
                             return (
@@ -55,14 +71,15 @@ const CustomProperties = ({ control, errors }: any) => {
                                                 placeholder="e.g. storage, model"
                                                 icon={<PackageOpen size={16} />}
                                                 value={newLabel}
-                                                onChange={(e: any) => setNewLabel(e.target.value)}
+                                                onChange={(e: any) => setNewLabel(sanitize(e.target.value))}
+                                                onKeyDown={(e: any) => e.key === 'Enter' && addProperty()}
                                             />
                                         </div>
                                         <button
                                             type="button"
                                             onClick={addProperty}
-                                            disabled={!newLabel.trim()}
-                                            className={`flex items-center gap-2 mt-4 transition-all duration-300 text-sm ${!newLabel.trim() ? 'text-slate-500 cursor-not-allowed opacity-50' : 'text-blue-500 hover:text-blue-400'}`}
+                                            disabled={!newLabel.trim() || properties.some(p => p.label.toLowerCase() === newLabel.toLowerCase())}
+                                            className={`flex items-center gap-2 mt-4 transition-all duration-300 text-sm ${!newLabel.trim() || properties.some(p => p.label.toLowerCase() === newLabel.toLowerCase()) ? 'text-slate-500 cursor-not-allowed opacity-50' : 'text-blue-500 hover:text-blue-400'}`}
                                             title="Add property"
                                         >
                                             <PlusCircle size={16} />
@@ -94,8 +111,9 @@ const CustomProperties = ({ control, errors }: any) => {
                                                             <input 
                                                                 type="text" 
                                                                 placeholder="Add value (e.g. XL, Blue, 128GB)"
-                                                                value={newValue}
-                                                                onChange={(e) => setNewValue(e.target.value)}
+                                                                value={newValues[index] ?? ''}
+                                                                onChange={(e) => setNewValues(prev => ({ ...prev, [index]: sanitize(e.target.value) }))}
+                                                                onKeyDown={(e) => e.key === 'Enter' && addValue(index)}
                                                                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-lg py-1.5 px-3 focus:border-blue-500/50 focus:outline-none transition-all placeholder:text-slate-500 text-xs" 
                                                             />
                                                         </div>
@@ -110,8 +128,15 @@ const CustomProperties = ({ control, errors }: any) => {
                                                     </div>
                                                     <div className="flex flex-wrap gap-2 mt-3">
                                                         {property.values.map((value, vIndex) => (
-                                                            <span key={vIndex} className="px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded-md text-xs font-bold">
+                                                            <span key={vIndex} className="flex items-center gap-1 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded-md text-xs font-bold">
                                                                 {value}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeValue(index, vIndex)}
+                                                                    className="ml-1 text-blue-400 hover:text-red-400 transition-colors"
+                                                                >
+                                                                    <X size={10} />
+                                                                </button>
                                                             </span>
                                                         ))}
                                                     </div>

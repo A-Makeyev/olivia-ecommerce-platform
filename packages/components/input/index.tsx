@@ -32,6 +32,8 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
         const theme = themes[labelTheme]
         const [isOpen, setIsOpen] = useState(false)
 
+        const isDisabled = (props as SelectHTMLAttributes<HTMLSelectElement>).disabled
+
         const inputBaseStyle =
         `
             ${icon ? (isSm ? 'pl-9' : isLg ? 'pl-14' : 'pl-11') : (isSm ? 'pl-3' : isLg ? 'pl-6' : 'pl-4')}
@@ -45,9 +47,10 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
         `
             ${icon ? (isSm ? 'pl-9' : isLg ? 'pl-14' : 'pl-11') : (isSm ? 'pl-3' : isLg ? 'pl-6' : 'pl-4')}
             ${error ? 'border-red-500' : 'border-slate-400 focus:border-[#80DEEA]'}
+            ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             w-full ${isSm ? 'py-1.5 min-h-[34px]' : isLg ? 'py-5 min-h-[64px]' : 'py-3.5 min-h-[52px]'} pr-10 outline-0
             appearance-none rounded-lg border transition-all duration-300 ease-out bg-transparent
-            ${isSm ? 'text-sm' : isLg ? 'text-xl' : 'text-lg'} text-white cursor-pointer relative z-20
+            ${isSm ? 'text-sm' : isLg ? 'text-xl' : 'text-lg'} text-white relative z-20
         `
 
         const labelStyle =
@@ -94,7 +97,10 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
                         <select
                             ref={ref as Ref<HTMLSelectElement>}
                             className={`${selectBaseStyle} ${className}`}
-                            onClick={() => setIsOpen(prev => !prev)}
+                            onClick={(e) => {
+                                if (!isDisabled) setIsOpen(prev => !prev);
+                                (props as SelectHTMLAttributes<HTMLSelectElement>).onClick?.(e)
+                            }}
                             onBlur={(e) => {
                                 setIsOpen(false);
                                 (props as SelectHTMLAttributes<HTMLSelectElement>).onBlur?.(e)
