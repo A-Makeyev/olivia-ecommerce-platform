@@ -262,3 +262,26 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
     return next(err)
   }
 }
+
+export const getShopProducts = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    console.log('seller:', req.seller?.id)
+    console.log('shopId:', req.seller?.shop?.id)
+
+    const products = await prisma.products.findMany({
+      where: {
+        shopId: req.seller?.shop?.id
+      },
+      include: {
+        images: true
+      }
+    })
+
+    res.status(200).json({
+      success: true,
+      products
+    })
+  } catch (err) {
+    return next(err)
+  }
+}

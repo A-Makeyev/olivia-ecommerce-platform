@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { enhancements } from 'apps/seller-ui/src/utils/imagekit-enhancement'
 import { ChevronRight, ClipboardPen, DollarSign, Package, Tag, Award, LayoutGrid, Layers, Link2, Loader2, Banknote, Coins, Boxes, ShieldCheck, Video, PlusCircle, X, Wand2, Loader, ChevronDown } from 'lucide-react'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
@@ -25,6 +25,8 @@ interface UploadedImage {
 
 const Page = () => {
     const router = useRouter()
+    const queryClient = useQueryClient()
+    
     const [loading, setLoading] = useState(false)
     const [isChanged, setIsChanged] = useState(true)
     const [isCodOpen, setIsCodOpen] = useState(false)
@@ -187,6 +189,7 @@ const Page = () => {
 
         try {
             await axiosInstance.post('/product/api/create-product', data)
+            await queryClient.invalidateQueries({ queryKey: ['shop-products'] })
 
             toast.success('Product created successfully')
             setTimeout(() => {
@@ -235,7 +238,7 @@ const Page = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-[84px] h-[40px] flex items-center justify-center text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg shadow-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
+                        className="w-[84px] h-[40px] flex items-center justify-center text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
                     >
                         {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
                     </button>

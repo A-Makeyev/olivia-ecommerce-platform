@@ -26,10 +26,10 @@ const SizeSelector = ({ control, errors }: any) => {
                         : [...(field.value || []), size]
                     )
                   }
-                  className={`px-3 py-1 rounded-lg font-Poppins transition-colors border ${
+                  className={`px-3 py-1 rounded-lg font-Poppins border transition ${
                     isSelected
-                      ? "bg-gray-700 text-white border-[#ffffff6b]"
-                      : "bg-gray-800 text-gray-300 border-transparent"
+                      ? "bg-slate-700 text-white border-[#ffffff6b]"
+                      : "bg-slate-800 text-slate-300 border-transparent hover:bg-slate-700"
                   }`}
                 >
                   {size}

@@ -7,6 +7,7 @@ import {
     deleteProductImage,
     getCategories, 
     getDiscountCodes, 
+    getShopProducts, 
     uploadProductImage 
 } from '../controllers/product.controller'
 
@@ -15,6 +16,7 @@ const router: Router = express.Router()
 
 router.get('/get-categories', getCategories)
 router.get('/get-discount-codes', isAuthenticated, getDiscountCodes)
+router.get('/get-shop-products', isAuthenticated, getShopProducts)
 router.post('/create-discount-code', isAuthenticated, createDiscountCode)
 router.post('/upload-product-image', isAuthenticated, uploadProductImage)
 router.post('/create-product', isAuthenticated, createProduct)

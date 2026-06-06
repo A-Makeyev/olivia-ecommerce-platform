@@ -62,7 +62,7 @@ model shops {
   website       String?
   socialLinks   Json[]
   reviews       shopReviews[]
-  ratings       Float         @default(0)
+  rating        Float         @default(0)
   sellerId      String        @unique @db.ObjectId
   sellers       sellers       @relation(fields: [sellerId], references: [id])
   createdAt     DateTime      @default(now())
@@ -116,7 +116,7 @@ model products {
   stock                     Int
   sale_price                Float?
   regular_price             Float
-  ratings                   Float           @default(5)
+  rating                    Float           @default(5)
   warranty                  String?
   custom_specifications     Json?
   custom_properties         Json

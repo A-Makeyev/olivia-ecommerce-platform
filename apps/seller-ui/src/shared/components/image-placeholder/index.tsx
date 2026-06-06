@@ -107,7 +107,7 @@ const ImagePlaceholder = ({
             {isUploading && (
                 <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-lg pointer-events-auto">
                     <Loader2 size={small ? 24 : 38} className="animate-spin text-[#80DEEA]" />
-                    <span className="text-slate-400 text-xs mt-2 font-medium tracking-wide">Uploading..</span>
+                    <span className="text-slate-400 text-xs mt-2 font-medium tracking-wide">Uploading</span>
                 </div>
             )}
         </div>
