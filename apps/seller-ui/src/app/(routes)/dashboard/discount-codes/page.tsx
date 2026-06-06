@@ -1,14 +1,16 @@
 'use client'
 import { useState } from 'react'
-import { ChevronRight, Loader2, Trash2, X, Tag, Coins, TicketPercent, Percent } from 'lucide-react'
-import Link from 'next/link'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
-import toast from 'react-hot-toast'
-import { Controller, useForm } from 'react-hook-form'
-import Input from 'packages/components/input'
 import { AxiosError } from 'axios'
+import { Controller, useForm } from 'react-hook-form'
+import { ChevronRight, Loader2, Trash2, X, Tag, Coins, TicketPercent, Percent } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import DeleteDiscountCodeModal from 'apps/seller-ui/src/shared/components/modals/delete-discount-codes'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
+import Input from 'packages/components/input'
+import toast from 'react-hot-toast'
+import Link from 'next/link'
+
+
 const Page = () => {
 const queryClient = useQueryClient()
 const [showModal, setShowModal] = useState(false)
@@ -84,17 +86,17 @@ const onSubmit = (data: any) => {
 const discountType = watch('discountType')
 
 return (
-    <div className="w-full min-h-screen font-semibold p-4 sm:p-8">
+    <div className="w-full min-h-screen p-4 sm:p-8 font-semibold">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
             <div>
-                <h1 className="text-2xl font-bold text-white font-Poppins tracking-tight">
+                <h2 className="text-2xl text-white font-Poppins">
                     Discount Codes
-                </h1>
-                <div className="flex items-center gap-1 text-sm text-slate-500 mt-1.5">
-                    <Link href="/dashboard" className="text-[#80DEEA] hover:text-[#4dd0e1] transition-colors">
+                </h2>
+                <div className="flex items-center text-sm text-slate-400 mt-1">
+                    <Link href={"/dashboard"} className="text-[#80DEEA] hover:underline cursor-pointer">
                         Dashboard
                     </Link>
-                    <ChevronRight size={13} className="opacity-40" />
+                    <ChevronRight size={14} className="mx-1 opacity-[0.8]" />
                     <span>Discount Codes</span>
                 </div>
             </div>
@@ -108,10 +110,15 @@ return (
         </div>
 
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80">
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800/80">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                     Active Discount Codes
                 </h3>
+                {discountCodes?.length > 0 && (
+                    <span className="inline-block px-1.5 text-xs bg-[#80DEEA]/10 text-[#80DEEA] rounded-xl ring-1 ring-slate-700/60">
+                        {discountCodes?.length}
+                    </span>
+                )}
             </div>
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500">
@@ -220,7 +227,10 @@ return (
                     
                     <div className="px-5 py-3.5 border-t border-slate-800/60 flex items-center justify-between">
                         <span className="text-sm font-semibold text-slate-600">
-                            {discountCodes.length} total code{discountCodes.length !== 1 ? "s" : ""}
+                            {discountCodes.length < 8 
+                                ? `${8 - discountCodes.length} more code${discountCodes.length === 7 ? "" : "s"} available` 
+                                : "No more codes available"
+                            }
                         </span>
                     </div>
                 </>
@@ -254,7 +264,8 @@ return (
                                 },
                                 validate: (value) => 
                                     !discountCodes.some((code: any) => code.public_name.trim().toLowerCase() === value.trim().toLowerCase()) 
-                                    || 'A discount code with this name already exists'
+                                    || 'A discount code with this name already exists',
+                                setValueAs: (value: string) => value?.charAt(0).toUpperCase() + value.slice(1)
                             })}
                         />
                         <Controller 

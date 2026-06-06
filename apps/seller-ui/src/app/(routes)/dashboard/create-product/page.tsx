@@ -212,9 +212,9 @@ const Page = () => {
                 }
             }}
         >
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 font-semibold">
                 <div>
-                    <h2 className="text-2xl font-semibold text-white font-Poppins">
+                    <h2 className="text-2xl text-white font-Poppins">
                         Create Product
                     </h2>
                     <div className="flex items-center text-sm text-slate-400 mt-1">

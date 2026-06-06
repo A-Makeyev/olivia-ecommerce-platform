@@ -4,10 +4,12 @@ import {
     createDiscountCode, 
     createProduct, 
     deleteDiscountCode, 
+    deleteProduct, 
     deleteProductImage,
     getCategories, 
     getDiscountCodes, 
     getShopProducts, 
+    restoreDeletedProduct, 
     uploadProductImage 
 } from '../controllers/product.controller'
 
@@ -22,5 +24,7 @@ router.post('/upload-product-image', isAuthenticated, uploadProductImage)
 router.post('/create-product', isAuthenticated, createProduct)
 router.delete('/delete-discount-code/:id', isAuthenticated, deleteDiscountCode)
 router.delete('/delete-product-image', isAuthenticated, deleteProductImage)
+router.delete('/delete-product/:id', isAuthenticated, deleteProduct)
+router.put('/restore-product/:id', isAuthenticated, restoreDeletedProduct)
 
 export default router

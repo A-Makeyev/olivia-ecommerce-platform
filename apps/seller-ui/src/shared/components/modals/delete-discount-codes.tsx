@@ -1,6 +1,7 @@
 import { AxiosError } from "axios"
 import { Loader2, X } from "lucide-react"
 
+
 const DeleteDiscountCodeModal = ({ discount, onClose, onConfirm, isPending, isError, error }: {
     discount: any
     onClose: () => void

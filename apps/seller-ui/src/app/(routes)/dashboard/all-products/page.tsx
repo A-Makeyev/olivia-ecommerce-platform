@@ -1,10 +1,12 @@
 'use client'
 
 import { useMemo, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { AlertCircle, AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
 import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender } from "@tanstack/react-table"
+import DeleteProductModal from "apps/seller-ui/src/shared/components/modals/delete-product"
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance"
+import toast from "react-hot-toast"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -83,13 +85,33 @@ const PriceDisplay = ({ regular, sale }: { regular: number; sale?: number }) => 
     return <span className="font-semibold text-white tabular-nums">${regular}</span>
 }
 
+const formatExpiry = (date: string) =>
+    new Date(date).toLocaleString('en-GB', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+    })
+
+const hoursUntilExpiry = (deletedAt: string) =>
+    (new Date(deletedAt).getTime() - Date.now()) / (1000 * 60 * 60)
+
+const isExpiringSoon = (deletedAt: string, threshold = 12) => {
+    const h = hoursUntilExpiry(deletedAt)
+    return h > 0 && h < threshold
+}
+
 const getProducts = async () => {
     const res = await axiosInstance.get('/product/api/get-shop-products')
     return res?.data?.products
 }
 
+type Tab = 'active' | 'deleted'
+
 const ProductList = () => {
+    const queryClient = useQueryClient()
     const [globalFilter, setGlobalFilter] = useState('')
+    const [confirmDeleteModal, setConfirmDeleteModal] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState<any>(null)
+    const [activeTab, setActiveTab] = useState<Tab>('active')
 
     const { data: products = [], isLoading, isError } = useQuery({
         queryKey: ['shop-products'],
@@ -98,7 +120,56 @@ const ProductList = () => {
         gcTime: 10 * 60 * 1000,
     })
 
-    const columns = useMemo(() => [
+    const deleteProductMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await axiosInstance.delete(`/product/api/delete-product/${id}`)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+            setConfirmDeleteModal(false)
+            toast.success('Product deleted successfully')
+        },
+        onError: () => {
+            toast.error('Failed to delete product')
+        }
+    })
+
+    const restoreProductMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await axiosInstance.put(`/product/api/restore-product/${id}`)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+            setConfirmDeleteModal(false)
+            toast.success('Product restored successfully')
+        },
+        onError: () => {
+            toast.error('Failed to restore product')
+        }
+    })
+
+    const openConfirmDeleteModal = (product: any) => {
+        setSelectedProduct(product)
+        setConfirmDeleteModal(true)
+    }
+
+    const activeProducts = useMemo(() => products.filter((p: any) => !p.isDeleted), [products])
+    const deletedProducts = useMemo(() => products.filter((p: any) => p.isDeleted), [products])
+    const displayProducts = activeTab === 'active' ? activeProducts : deletedProducts
+
+    const urgentProducts = useMemo(
+        () => deletedProducts.filter((p: any) => p.deletedAt && isExpiringSoon(p.deletedAt)),
+        [deletedProducts]
+    )
+    const soonestExpiry = useMemo(() => {
+        if (urgentProducts.length === 0) return null
+        return urgentProducts.reduce((min: any, p: any) =>
+            new Date(p.deletedAt) < new Date(min.deletedAt) ? p : min
+        )
+    }, [urgentProducts])
+
+    const columns = useMemo(() => {
+        const base: any[] = [
         {
             accessorKey: 'title',
             header: 'Product',
@@ -148,7 +219,30 @@ const ProductList = () => {
             header: 'Rating',
             cell: ({ row }: any) => <StarRating rating={row.original.rating || 0} />,
         },
-        {
+        ]
+
+        if (activeTab === 'deleted') {
+            base.push({
+                id: 'expires',
+                header: 'Restore by',
+                cell: ({ row }: any) => {
+                    if (!row.original.deletedAt) return <span className="text-slate-600 text-xs">—</span>
+                    const hours = hoursUntilExpiry(row.original.deletedAt)
+                    const urgent = hours > 0 && hours < 12
+                    const expired = hours <= 0
+                    return (
+                        <div className={`flex items-center gap-1.5 text-xs font-medium tabular-nums ${
+                            expired ? 'text-slate-600' : urgent ? 'text-orange-400' : 'text-slate-400'
+                        }`}>
+                            {urgent && <AlertTriangle size={12} className="shrink-0" />}
+                            {expired ? 'Expired' : formatExpiry(row.original.deletedAt)}
+                        </div>
+                    )
+                },
+            })
+        }
+
+        base.push({
             header: 'Actions',
             cell: ({ row }: any) => (
                 <div className="flex items-center gap-0.5">
@@ -172,19 +266,32 @@ const ProductList = () => {
                     >
                         <BarChart2 size={15} />
                     </button>
-                    <button
-                        title="Delete"
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
-                    >
-                        <Trash2 size={15} />
-                    </button>
+                    {row.original.isDeleted ? (
+                        <button
+                            title="Restore"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
+                            onClick={() => openConfirmDeleteModal(row.original)}
+                        >
+                            <RotateCcw size={15} />
+                        </button>
+                    ) : (
+                        <button
+                            title="Delete"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+                            onClick={() => openConfirmDeleteModal(row.original)}
+                        >
+                            <Trash2 size={15} />
+                        </button>
+                    )}
                 </div>
             ),
-        },
-    ], [])
+        })
+
+        return base
+    }, [activeTab])
 
     const table = useReactTable({
-        data: products,
+        data: displayProducts,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -196,20 +303,17 @@ const ProductList = () => {
     const visibleRows = table.getRowModel().rows
 
     return (
-        <div className="w-full min-h-screen font-semibold p-4 sm:p-8">
+        <div className="w-full min-h-screen p-4 sm:p-8 font-semibold">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-white font-Poppins tracking-tight">
+                    <h2 className="text-2xl text-white font-Poppins">
                         All Products
-                    </h1>
-                    <div className="flex items-center gap-1 text-sm text-slate-500 mt-1.5">
-                        <Link
-                            href="/dashboard"
-                            className="text-[#80DEEA] hover:text-[#4dd0e1] transition-colors"
-                        >
+                    </h2>
+                    <div className="flex items-center text-sm text-slate-400 mt-1">
+                        <Link href={"/dashboard"} className="text-[#80DEEA] hover:underline cursor-pointer">
                             Dashboard
                         </Link>
-                        <ChevronRight size={13} className="opacity-40" />
+                        <ChevronRight size={14} className="mx-1 opacity-[0.8]" />
                         <span>All Products</span>
                     </div>
                 </div>
@@ -221,25 +325,48 @@ const ProductList = () => {
                 </Link>
             </div>
 
-            {!isLoading && !isError && products.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                    {[
-                        { label: 'Total Products', value: products.length },
-                        { label: 'Low Stock',      value: products.filter((p: any) => p.stock > 0 && p.stock < 10).length, warn: true },
-                        { label: 'Out of Stock',   value: products.filter((p: any) => p.stock === 0).length, danger: true },
-                        { label: 'On Sale',        value: products.filter((p: any) => p.sale_price).length, accent: true },
-                    ].map(({ label, value, warn, danger, accent }) => (
-                        <div key={label} className="bg-slate-900/60 border border-slate-800/80 rounded-xl px-4 py-3">
-                            <p className="text-sm text-slate-500">{label}</p>
-                            <p className={`text-xl font-bold mt-0.5 tabular-nums ${
-                                danger ? 'text-red-400' : warn ? 'text-orange-400' : accent ? 'text-[#80DEEA]' : 'text-white'
-                            }`}>
-                                {value}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div className="flex items-center gap-1 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-xl p-1 w-fit">
+                <button
+                    onClick={() => { setActiveTab('active'); setGlobalFilter('') }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                        activeTab === 'active'
+                            ? 'bg-[#80DEEA]/10 text-[#80DEEA] ring-1 ring-[#80DEEA]/20'
+                            : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                    <Package size={14} />
+                    Active
+                    {!isLoading && !isError && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+                            activeTab === 'active'
+                                ? 'bg-[#80DEEA]/15 text-[#80DEEA]'
+                                : 'bg-slate-800 text-slate-500'
+                        }`}>
+                            {activeProducts.length}
+                        </span>
+                    )}
+                </button>
+                <button
+                    onClick={() => { setActiveTab('deleted'); setGlobalFilter('') }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                        activeTab === 'deleted'
+                            ? 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'
+                            : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                    <Trash2 size={14} />
+                    Trash
+                    {!isLoading && !isError && deletedProducts.length > 0 && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+                            activeTab === 'deleted'
+                                ? 'bg-red-500/15 text-red-400'
+                                : 'bg-slate-800 text-slate-500'
+                        }`}>
+                            {deletedProducts.length}
+                        </span>
+                    )}
+                </button>
+            </div>
 
             <div className="mb-5 flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-[#80DEEA]/40 focus-within:ring-1 focus-within:ring-[#80DEEA]/10 transition-all duration-200">
                 <Search size={14} className="text-slate-500 shrink-0" />
@@ -260,15 +387,58 @@ const ProductList = () => {
                 )}
             </div>
 
-            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
+            {activeTab === 'active' && !isLoading && !isError && activeProducts.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    {[
+                        { label: 'Total Products', value: activeProducts.length },
+                        { label: 'On Sale',        value: activeProducts.filter((p: any) => p.sale_price).length, accent: true },
+                        { label: 'Low Stock',      value: activeProducts.filter((p: any) => p.stock > 0 && p.stock < 10).length, warn: true },
+                        { label: 'Out of Stock',   value: activeProducts.filter((p: any) => p.stock === 0).length, danger: true }
+                    ].map(({ label, value, warn, danger, accent }) => (
+                        <div key={label} className="flex flex-col items-center bg-slate-900/60 border border-slate-800/80 rounded-xl px-3 py-3">
+                            <p className="text-sm text-slate-500">{label}</p>
+                            <p className={`text-xl font-semibold mt-1 tabular-nums ${
+                                danger ? 'text-red-400' : warn ? 'text-orange-400' : accent ? 'text-[#80DEEA]' : 'text-white'
+                            }`}>
+                                {value}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            )}
 
+            {activeTab === 'deleted' && !isLoading && !isError && deletedProducts.length > 0 && (
+                urgentProducts.length > 0 ? (
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/8 border border-orange-500/25 text-orange-300 text-sm">
+                        <AlertTriangle size={14} className="shrink-0 text-orange-400" />
+                        <span>
+                            <span className="font-semibold text-orange-300">
+                                {urgentProducts.length} product{urgentProducts.length !== 1 ? 's' : ''} expiring soon
+                            </span>
+                            {soonestExpiry && (
+                                <> — earliest on <span className="font-semibold tabular-nums">{formatExpiry(soonestExpiry.deletedAt)}</span></>
+                            )}.{' '}
+                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal.
+                        </span>
+                    </div>
+                ) : (
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/15 text-red-400 text-sm">
+                        <AlertCircle size={18} className="shrink-0" />
+                        <span>
+                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion
+                        </span>
+                    </div>
+                )
+            )}
+
+            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80">
                     <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                        Product Inventory
+                        {activeTab === 'active' ? 'Active Inventory' : 'Scheduled for deletion'}
                     </h3>
                     {!isLoading && !isError && globalFilter && (
                         <span className="text-xs text-slate-500">
-                            {visibleRows.length} of {products.length} results
+                            {visibleRows.length} of {displayProducts.length} results
                         </span>
                     )}
                 </div>
@@ -283,22 +453,34 @@ const ProductList = () => {
                         <p className="text-red-400 font-semibold">Failed to load products</p>
                         <p className="text-slate-500 text-sm">Please try again later</p>
                     </div>
-                ) : products.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center ring-1 ring-slate-700">
-                            <Package size={28} className="text-slate-600" />
+                ) : displayProducts.length === 0 ? (
+                    activeTab === 'deleted' ? (
+                        <div className="flex flex-col items-center justify-center py-24 gap-3">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center ring-1 ring-slate-700">
+                                <Trash2 size={28} className="text-slate-600" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-semibold text-slate-300">Trash is empty</p>
+                                <p className="text-sm text-slate-500 mt-1">Deleted products will appear here</p>
+                            </div>
                         </div>
-                        <div className="text-center">
-                            <p className="font-semibold text-slate-300">No products yet</p>
-                            <p className="text-sm text-slate-500 mt-1">Create your first product to get started</p>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-24 gap-3">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center ring-1 ring-slate-700">
+                                <Package size={28} className="text-slate-600" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-semibold text-slate-300">No products yet</p>
+                                <p className="text-sm text-slate-500 mt-1">Create your first product to get started</p>
+                            </div>
+                            <Link
+                                href="/dashboard/create-product"
+                                className="mt-1 text-sm text-[#80DEEA] hover:underline font-medium"
+                            >
+                                Create Product
+                            </Link>
                         </div>
-                        <Link
-                            href="/dashboard/create-product"
-                            className="mt-1 text-sm text-[#80DEEA] hover:underline font-medium"
-                        >
-                            Create Product
-                        </Link>
-                    </div>
+                    )
                 ) : visibleRows.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-2">
                         <p className="text-sm font-semibold text-slate-400">No results for "{globalFilter}"</p>
@@ -308,6 +490,7 @@ const ProductList = () => {
                     </div>
                 ) : (
                     <>
+                        {/* Mobile cards */}
                         <div className="flex flex-col divide-y divide-slate-800/50 md:hidden">
                             {visibleRows.map((row) => {
                                 const p = row.original as any
@@ -327,9 +510,23 @@ const ProductList = () => {
                                                 >
                                                     {p.title}
                                                 </Link>
-                                                <button className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                {p.isDeleted ? (
+                                                    <button
+                                                        title="Restore"
+                                                        onClick={() => openConfirmDeleteModal(p)}
+                                                        className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                                                    >
+                                                        <RotateCcw size={14} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        title="Delete"
+                                                        onClick={() => openConfirmDeleteModal(p)}
+                                                        className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
                                             </div>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <span className="text-[11px] px-2 py-0.5 bg-slate-800 text-slate-400 rounded font-medium ring-1 ring-slate-700/60">
@@ -337,6 +534,16 @@ const ProductList = () => {
                                                 </span>
                                                 <StockBadge stock={p.stock} />
                                             </div>
+                                            {p.isDeleted && p.deletedAt && (() => {
+                                                const hours = hoursUntilExpiry(p.deletedAt)
+                                                const urgent = hours > 0 && hours < 12
+                                                return (
+                                                    <div className={`flex items-center gap-1 mt-1.5 text-[11px] font-medium tabular-nums ${urgent ? 'text-orange-400' : 'text-slate-500'}`}>
+                                                        {urgent && <AlertTriangle size={10} className="shrink-0" />}
+                                                        <span>Restore by {formatExpiry(p.deletedAt)}</span>
+                                                    </div>
+                                                )
+                                            })()}
                                             <div className="flex items-center justify-between mt-2">
                                                 <PriceDisplay regular={p.regular_price} sale={p.sale_price} />
                                                 <StarRating rating={p.rating || 0} />
@@ -347,6 +554,7 @@ const ProductList = () => {
                             })}
                         </div>
 
+                        {/* Desktop table */}
                         <div className="hidden md:block w-full overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -382,17 +590,30 @@ const ProductList = () => {
                                 </tbody>
                             </table>
                         </div>
+
                         <div className="px-5 py-3.5 border-t border-slate-800/60 flex items-center justify-between">
                             <span className="text-sm font-semibold text-slate-600">
-                                {visibleRows.length} of {products.length} product{visibleRows.length !== 1 ? "s" : ""}
+                                {visibleRows.length} of {displayProducts.length} product{visibleRows.length !== 1 ? "s" : ""}
                             </span>
-                            {globalFilter && visibleRows.length !== products.length && (
+                            {globalFilter && visibleRows.length !== displayProducts.length && (
                                 <span className="text-xs text-slate-500">
                                     Showing {visibleRows.length} match{visibleRows.length !== 1 ? "es" : ""}
                                 </span>
                             )}
                         </div>
                     </>
+                )}
+
+                {confirmDeleteModal && (
+                    <DeleteProductModal
+                        product={selectedProduct}
+                        onClose={() => setConfirmDeleteModal(false)}
+                        onConfirm={() => deleteProductMutation.mutate(selectedProduct?.id)}
+                        onRestore={() => restoreProductMutation.mutate(selectedProduct?.id)}
+                        isPending={deleteProductMutation.isPending || restoreProductMutation.isPending}
+                        isError={deleteProductMutation.isError || restoreProductMutation.isError}
+                        error={deleteProductMutation.error || restoreProductMutation.error}
+                    />
                 )}
             </div>
         </div>
