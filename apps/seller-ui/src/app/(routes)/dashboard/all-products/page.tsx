@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
+import { AlertCircle, AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
 import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender } from "@tanstack/react-table"
 import DeleteProductModal from "apps/seller-ui/src/shared/components/modals/delete-product"
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance"
@@ -154,7 +154,12 @@ const ProductList = () => {
     }
 
     const activeProducts = useMemo(() => products.filter((p: any) => !p.isDeleted), [products])
-    const deletedProducts = useMemo(() => products.filter((p: any) => p.isDeleted), [products])
+    const deletedProducts = useMemo(() =>
+        products
+            .filter((p: any) => p.isDeleted)
+            .sort((a: any, b: any) => new Date(a.deletedAt).getTime() - new Date(b.deletedAt).getTime()),
+        [products]
+    )
     const displayProducts = activeTab === 'active' ? activeProducts : deletedProducts
 
     const urgentProducts = useMemo(
@@ -231,10 +236,9 @@ const ProductList = () => {
                     const urgent = hours > 0 && hours < 12
                     const expired = hours <= 0
                     return (
-                        <div className={`flex items-center gap-1.5 text-xs font-medium tabular-nums ${
-                            expired ? 'text-slate-600' : urgent ? 'text-orange-400' : 'text-slate-400'
+                        <div className={`flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
+                            expired ? 'text-slate-600' : urgent ? 'text-red-400' : 'text-slate-400'
                         }`}>
-                            {urgent && <AlertTriangle size={12} className="shrink-0" />}
                             {expired ? 'Expired' : formatExpiry(row.original.deletedAt)}
                         </div>
                     )
@@ -422,21 +426,21 @@ const ProductList = () => {
 
             {activeTab === 'deleted' && !isLoading && !isError && deletedProducts.length > 0 && (
                 urgentProducts.length > 0 ? (
-                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/8 border border-orange-500/25 text-orange-300 text-sm">
-                        <AlertTriangle size={14} className="shrink-0 text-orange-400" />
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm">
+                        <AlertCircle size={18} className="shrink-0 text-red-400" />
                         <span>
-                            <span className="font-semibold text-orange-300">
+                            <span className="font-semibold text-red-400">
                                 {urgentProducts.length} product{urgentProducts.length !== 1 ? 's' : ''} expiring soon
                             </span>
                             {soonestExpiry && (
                                 <> — earliest on <span className="font-semibold tabular-nums">{formatExpiry(soonestExpiry.deletedAt)}</span></>
                             )}.{' '}
-                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal.
+                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal
                         </span>
                     </div>
                 ) : (
-                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/15 text-red-400 text-sm">
-                        <RotateCcw size={14} className="shrink-0" />
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/10 border border-orange-300/60 text-orange-300 text-sm">
+                        <AlertCircle size={18} className="shrink-0 text-orange-300" />
                         <span>
                             {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion,
                             restore {deletedProducts.length === 1 ? 'it' : 'them'} under actions tab
