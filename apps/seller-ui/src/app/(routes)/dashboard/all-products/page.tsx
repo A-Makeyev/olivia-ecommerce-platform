@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { AlertCircle, AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
+import { AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
 import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender } from "@tanstack/react-table"
 import DeleteProductModal from "apps/seller-ui/src/shared/components/modals/delete-product"
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance"
@@ -325,6 +325,7 @@ const ProductList = () => {
                 </Link>
             </div>
 
+            {/* Tabs */}
             <div className="flex items-center gap-1 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-xl p-1 w-fit">
                 <button
                     onClick={() => { setActiveTab('active'); setGlobalFilter('') }}
@@ -357,13 +358,24 @@ const ProductList = () => {
                     <Trash2 size={14} />
                     Trash
                     {!isLoading && !isError && deletedProducts.length > 0 && (
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
-                            activeTab === 'deleted'
-                                ? 'bg-red-500/15 text-red-400'
-                                : 'bg-slate-800 text-slate-500'
-                        }`}>
-                            {deletedProducts.length}
-                        </span>
+                        urgentProducts.length > 0 ? (
+                            <span className={`flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+                                activeTab === 'deleted'
+                                    ? 'bg-orange-500/15 text-orange-400'
+                                    : 'bg-orange-500/10 text-orange-400'
+                            }`}>
+                                <AlertTriangle size={10} className="animate-pulse" />
+                                {deletedProducts.length}
+                            </span>
+                        ) : (
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+                                activeTab === 'deleted'
+                                    ? 'bg-red-500/15 text-red-400'
+                                    : 'bg-slate-800 text-slate-500'
+                            }`}>
+                                {deletedProducts.length}
+                            </span>
+                        )
                     )}
                 </button>
             </div>
@@ -387,6 +399,7 @@ const ProductList = () => {
                 )}
             </div>
 
+            {/* Stats — active tab only */}
             {activeTab === 'active' && !isLoading && !isError && activeProducts.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                     {[
@@ -423,9 +436,10 @@ const ProductList = () => {
                     </div>
                 ) : (
                     <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/15 text-red-400 text-sm">
-                        <AlertCircle size={18} className="shrink-0" />
+                        <RotateCcw size={14} className="shrink-0" />
                         <span>
-                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion
+                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion,
+                            restore {deletedProducts.length === 1 ? 'it' : 'them'} under actions tab
                         </span>
                     </div>
                 )
@@ -434,7 +448,7 @@ const ProductList = () => {
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80">
                     <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                        {activeTab === 'active' ? 'Active Inventory' : 'Scheduled for deletion'}
+                        {activeTab === 'active' ? 'Active Inventory' : 'Archived Products'}
                     </h3>
                     {!isLoading && !isError && globalFilter && (
                         <span className="text-xs text-slate-500">

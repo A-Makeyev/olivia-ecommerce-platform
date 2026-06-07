@@ -351,7 +351,7 @@ const Page = () => {
                                                 />
                                             )}
                                             {!selectedCategory && subCategoryTouched && (
-                                                <p className="mt-1 text-yellow-500 text-sm font-medium">Please select a category first</p>
+                                                <p className="mt-1 text-yellow-500 text-sm font-medium">Select a category first</p>
                                             )}
                                         </div>
                                     )}

@@ -1,9 +1,10 @@
+import { errorMiddleware } from '@packages/error-handler/error-middleware'
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
-import { errorMiddleware } from '@packages/error-handler/error-middleware'
 import router from './routes/product.router'
+import './jobs/product-cron.job'
 
 
 const swaggerDocument = require('./swagger-output.json')
