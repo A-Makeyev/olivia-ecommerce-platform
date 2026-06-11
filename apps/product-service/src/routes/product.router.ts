@@ -1,6 +1,7 @@
 import express, { Router } from 'express'
 import isAuthenticated from '@packages/middleware/is-authenticated'
 import { 
+    archiveProduct,
     createDiscountCode, 
     createProduct, 
     deleteDiscountCode, 
@@ -10,6 +11,7 @@ import {
     getDiscountCodes, 
     getShopProducts, 
     restoreDeletedProduct, 
+    unarchiveProduct, 
     uploadProductImage 
 } from '../controllers/product.controller'
 
@@ -26,5 +28,7 @@ router.delete('/delete-discount-code/:id', isAuthenticated, deleteDiscountCode)
 router.delete('/delete-product-image', isAuthenticated, deleteProductImage)
 router.delete('/delete-product/:id', isAuthenticated, deleteProduct)
 router.put('/restore-product/:id', isAuthenticated, restoreDeletedProduct)
+router.put('/archive-product/:id',   isAuthenticated, archiveProduct)
+router.put('/unarchive-product/:id', isAuthenticated, unarchiveProduct)
 
 export default router

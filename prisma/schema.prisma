@@ -11,6 +11,8 @@ enum productStatus {
   Active
   Pending
   Draft
+  Archived
+  Deleted
 }
 
 model images {

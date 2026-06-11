@@ -28,9 +28,7 @@ const DeleteProductModal = ({ product, onClose, onConfirm, onRestore, isPending,
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className={`bg-slate-900 border rounded-2xl w-full max-w-sm p-6 transition-colors ${
-                isUrgent ? 'border-orange-500/30' : 'border-slate-800'
-            }`}>
+            <div className="bg-slate-900 border rounded-2xl w-full max-w-sm p-6 transition-colors border-slate-800">
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2.5">
                         <span className={`p-1.5 rounded-lg ${isDeleted ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
@@ -64,18 +62,7 @@ const DeleteProductModal = ({ product, onClose, onConfirm, onRestore, isPending,
                     </p>
 
                     {isDeleted && product?.deletedAt ? (
-                        isUrgent ? (
-                            <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20">
-                                <AlertTriangle size={13} className="shrink-0 mt-0.5 text-orange-400" />
-                                <span className="text-xs text-orange-300 leading-relaxed">
-                                    Expires{' '}
-                                    <span className="font-semibold tabular-nums">
-                                        {formatExpiry(product.deletedAt)}
-                                    </span>{' '}
-                                    — restore it now before it's permanently removed.
-                                </span>
-                            </div>
-                        ) : (
+                        isUrgent && (
                             <div className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
                                 <span className="text-xs text-slate-400">
                                     Restore by{' '}
@@ -84,7 +71,7 @@ const DeleteProductModal = ({ product, onClose, onConfirm, onRestore, isPending,
                                     </span>
                                 </span>
                             </div>
-                        )
+                        ) 
                     ) : !isDeleted ? (
                         <div className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
                             <span className="text-xs text-slate-400">

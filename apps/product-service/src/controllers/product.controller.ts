@@ -12,9 +12,9 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
       return res.status(404).json({ 'message': 'No Site Configurations found' })
     }
 
-    res.status(200).json({ 
-        categories: config.categories,
-        subCategories: config.subCategories
+    res.status(200).json({
+      categories: config.categories,
+      subCategories: config.subCategories
     })
   } catch (err) {
     return next(err)
@@ -25,10 +25,10 @@ export const createDiscountCode = async (req: any, res: Response, next: NextFunc
   try {
     const { public_name, discountType, discountValue, discountCode } = req.body
 
-    const isDiscountCodeExists = await prisma.discount_codes.findUnique({ 
-      where: { 
+    const isDiscountCodeExists = await prisma.discount_codes.findUnique({
+      where: {
         discountCode
-      } 
+      }
     })
 
     if (isDiscountCodeExists) {
@@ -67,7 +67,7 @@ export const createDiscountCode = async (req: any, res: Response, next: NextFunc
       success: true,
       newDiscountCode
     })
-  } catch(err) {
+  } catch (err) {
     return next(err)
   }
 }
@@ -84,7 +84,7 @@ export const getDiscountCodes = async (req: any, res: Response, next: NextFuncti
       success: true,
       discountCodes
     })
-  } catch(err) {
+  } catch (err) {
     return next(err)
   }
 }
@@ -121,7 +121,7 @@ export const deleteDiscountCode = async (req: any, res: Response, next: NextFunc
     res.status(200).json({
       success: true
     })
-  } catch(err) {
+  } catch (err) {
     return next(err)
   }
 }
@@ -144,8 +144,8 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
       success: true,
       file_url: uploadedFile.url,
       fileId: uploadedFile.fileId
-    })  
-  } catch(err) {
+    })
+  } catch (err) {
     return next(err)
   }
 }
@@ -153,7 +153,7 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
 export const deleteProductImage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { file_id } = req.body
-    
+
     if (!file_id) {
       return next(new ValidationError("file_id is required"))
     }
@@ -164,7 +164,7 @@ export const deleteProductImage = async (req: Request, res: Response, next: Next
       success: true
     })
 
-  } catch(err) {
+  } catch (err) {
     return next(err)
   }
 }
@@ -263,21 +263,34 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
   }
 }
 
+const deleteExpiredProducts = async () => {
+  const expired = await prisma.products.findMany({
+    where: { isDeleted: true, deletedAt: { lte: new Date() } },
+    include: { images: true }
+  })
+
+  if (expired.length === 0) return
+
+  await Promise.allSettled(
+    expired.flatMap(p => p.images.map(img => imagekit.deleteFile(img.file_id)))
+  )
+
+  const ids = expired.map(p => p.id)
+
+  await prisma.images.deleteMany({ where: { productsId: { in: ids } } })
+  await prisma.products.deleteMany({ where: { id: { in: ids } } })
+}
+
 export const getShopProducts = async (req: any, res: Response, next: NextFunction) => {
   try {
+    deleteExpiredProducts().catch(err => console.error('[Delete Expired Products]', err))
+
     const products = await prisma.products.findMany({
-      where: {
-        shopId: req.seller?.shop?.id
-      },
-      include: {
-        images: true
-      }
+      where: { shopId: req.seller?.shop?.id },
+      include: { images: true }
     })
 
-    res.status(200).json({
-      success: true,
-      products
-    })
+    res.status(200).json({ success: true, products })
   } catch (err) {
     return next(err)
   }
@@ -286,46 +299,27 @@ export const getShopProducts = async (req: any, res: Response, next: NextFunctio
 export const deleteProduct = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params
-    const sellerId = req.seller?.shop?.id
+    const shopId = req.seller?.shop?.id
 
     const product = await prisma.products.findUnique({
-      where: { 
-        id 
-      },
-      select: {
-        id: true,
-        shopId: true,
-        isDeleted: true
-      }
+      where: { id },
+      select: { id: true, shopId: true, isDeleted: true }
     })
 
-    if (!product) {
-      return next(new NotFoundError('Product not found'))
-    }
-
-    if (product.shopId !== sellerId) {
-      return next(new ValidationError('Not authorized to perform this action'))
-    }
-
-    if (product.isDeleted) {
-      return next(new ValidationError('Product is already deleted'))
-    }
+    if (!product) return next(new NotFoundError('Product not found'))
+    if (product.shopId !== shopId) return next(new ValidationError('Not authorized to perform this action'))
+    if (product.isDeleted) return next(new ValidationError('Product is already in trash'))
 
     const deletedAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
     const deletedProduct = await prisma.products.update({
-      where: {
-        id
-      },
-      data: {
-        isDeleted: true,
-        deletedAt
-      }
+      where: { id },
+      data: { isDeleted: true, deletedAt }
     })
 
     res.status(200).json({
       deletedAt: deletedProduct.deletedAt,
-      message: `Product is scheduled for deletion in 24 hours. Restore is possible until ${deletedAt.toISOString()}`
+      message: `Product scheduled for deletion in 24 hours. Restore possible until ${deletedAt.toISOString()}`
     })
   } catch (err) {
     return next(err)
@@ -335,55 +329,79 @@ export const deleteProduct = async (req: any, res: Response, next: NextFunction)
 export const restoreDeletedProduct = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params
-    const sellerId = req.seller?.shop?.id
+    const shopId = req.seller?.shop?.id
 
     const product = await prisma.products.findUnique({
-      where: { 
-        id 
-      },
-      select: {
-        id: true,
-        shopId: true,
-        isDeleted: true
-      }
+      where: { id },
+      select: { id: true, shopId: true, isDeleted: true }
     })
 
-    if (!product) {
-      return next(new NotFoundError('Product not found'))
-    }
-
-    if (product.shopId !== sellerId) {
-      return next(new ValidationError('Not authorized to perform this action'))
-    }
-
-    if (!product.isDeleted) {
-      return res.status(400).json({
-        success: false,
-        message: 'Product is not deleted'
-      })
-    }
+    if (!product) return next(new NotFoundError('Product not found'))
+    if (product.shopId !== shopId) return next(new ValidationError('Not authorized to perform this action'))
+    if (!product.isDeleted) return next(new ValidationError('Product is not in trash'))
 
     const restoredProduct = await prisma.products.update({
-      where: {
-        id
-      },
-      data: {
-        isDeleted: false,
-        deletedAt: null
-      }
+      where: { id },
+      data: { isDeleted: false, deletedAt: null }
     })
 
     res.status(200).json({
       id: restoredProduct.id,
       isDeleted: restoredProduct.isDeleted,
-      message: 'Product has been restored',
-
+      message: 'Product restored successfully'
     })
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: 'Error restoring product',
-      error: err
+    return next(err)
+  }
+}
+
+export const archiveProduct = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params
+    const shopId = req.seller?.shop?.id
+
+    const product = await prisma.products.findUnique({
+      where: { id },
+      select: { id: true, shopId: true, isDeleted: true, status: true }
     })
+
+    if (!product) return next(new NotFoundError('Product not found'))
+    if (product.shopId !== shopId) return next(new ValidationError('Not authorized to perform this action'))
+    if (product.isDeleted) return next(new ValidationError('Cannot archive a product that is in trash'))
+    if (product.status === 'Archived') return next(new ValidationError('Product is already archived'))
+
+    await prisma.products.update({
+      where: { id },
+      data: { status: 'Archived' }
+    })
+
+    res.status(200).json({ success: true, message: 'Product archived' })
+  } catch (err) {
+    return next(err)
+  }
+}
+
+export const unarchiveProduct = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params
+    const shopId = req.seller?.shop?.id
+
+    const product = await prisma.products.findUnique({
+      where: { id },
+      select: { id: true, shopId: true, status: true }
+    })
+
+    if (!product) return next(new NotFoundError('Product not found'))
+    if (product.shopId !== shopId) return next(new ValidationError('Not authorized to perform this action'))
+    if (product.status !== 'Archived') return next(new ValidationError('Product is not archived'))
+
+    await prisma.products.update({
+      where: { id },
+      data: { status: 'Active' }
+    })
+
+    res.status(200).json({ success: true, message: 'Product unarchived' })
+  } catch (err) {
+    return next(err)
   }
 }

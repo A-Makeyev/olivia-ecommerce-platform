@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { AlertCircle, AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
+import { Archive, ArchiveRestore, AlertCircle, AlertTriangle, BarChart2, ChevronRight, Eye, Loader2, Package, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
 import { useReactTable, getCoreRowModel, getFilteredRowModel, flexRender } from "@tanstack/react-table"
 import DeleteProductModal from "apps/seller-ui/src/shared/components/modals/delete-product"
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance"
@@ -104,7 +104,7 @@ const getProducts = async () => {
     return res?.data?.products
 }
 
-type Tab = 'active' | 'deleted'
+type Tab = 'active' | 'archived' | 'deleted'
 
 const ProductList = () => {
     const queryClient = useQueryClient()
@@ -127,7 +127,7 @@ const ProductList = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shop-products'] })
             setConfirmDeleteModal(false)
-            toast.success('Product deleted successfully')
+            toast.success('Product moved to trash')
         },
         onError: () => {
             toast.error('Failed to delete product')
@@ -148,19 +148,56 @@ const ProductList = () => {
         }
     })
 
+    const archiveProductMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await axiosInstance.put(`/product/api/archive-product/${id}`)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+            toast.success('Product archived')
+        },
+        onError: () => {
+            toast.error('Failed to archive product')
+        }
+    })
+
+    const unarchiveProductMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await axiosInstance.put(`/product/api/unarchive-product/${id}`)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+            toast.success('Product unarchived')
+        },
+        onError: () => {
+            toast.error('Failed to unarchive product')
+        }
+    })
+
     const openConfirmDeleteModal = (product: any) => {
         setSelectedProduct(product)
         setConfirmDeleteModal(true)
     }
 
-    const activeProducts = useMemo(() => products.filter((p: any) => !p.isDeleted), [products])
+    const activeProducts = useMemo(
+        () => products.filter((p: any) => !p.isDeleted && p.status !== 'Archived'),
+        [products]
+    )
+    const archivedProducts = useMemo(
+        () => products.filter((p: any) => p.status === 'Archived' && !p.isDeleted),
+        [products]
+    )
     const deletedProducts = useMemo(() =>
         products
-            .filter((p: any) => p.isDeleted)
+            .filter((p: any) => p.isDeleted && p.deletedAt && hoursUntilExpiry(p.deletedAt) > 0)
             .sort((a: any, b: any) => new Date(a.deletedAt).getTime() - new Date(b.deletedAt).getTime()),
         [products]
     )
-    const displayProducts = activeTab === 'active' ? activeProducts : deletedProducts
+
+    const displayProducts =
+        activeTab === 'active'   ? activeProducts   :
+        activeTab === 'archived' ? archivedProducts :
+        deletedProducts
 
     const urgentProducts = useMemo(
         () => deletedProducts.filter((p: any) => p.deletedAt && isExpiringSoon(p.deletedAt)),
@@ -175,55 +212,55 @@ const ProductList = () => {
 
     const columns = useMemo(() => {
         const base: any[] = [
-        {
-            accessorKey: 'title',
-            header: 'Product',
-            cell: ({ row }: any) => (
-                <div className="flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden ring-1 ring-slate-700/80 shrink-0">
-                        <Image
-                            fill
-                            src={row.original.images[0]?.url}
-                            alt={row.original.title}
-                            className="object-cover"
-                        />
+            {
+                accessorKey: 'title',
+                header: 'Product',
+                cell: ({ row }: any) => (
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden ring-1 ring-slate-700/80 shrink-0">
+                            <Image
+                                fill
+                                src={row.original.images[0]?.url}
+                                alt={row.original.title}
+                                className="object-cover"
+                            />
+                        </div>
+                        <Link
+                            href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/product/${row.original.slug}`}
+                            title={row.original.title}
+                            className="font-semibold text-white hover:text-[#80DEEA] line-clamp-1 transition min-w-[150px] max-w-[300px]"
+                        >
+                            {row.original.title}
+                        </Link>
                     </div>
-                    <Link
-                        href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/product/${row.original.slug}`}
-                        title={row.original.title}
-                        className="font-semibold text-white hover:text-[#80DEEA] line-clamp-1 transition min-w-[150px] max-w-[300px]"
-                    >
-                        {row.original.title}
-                    </Link>
-                </div>
-            ),
-        },
-        {
-            accessorKey: 'price',
-            header: 'Price',
-            cell: ({ row }: any) => (
-                <PriceDisplay regular={row.original.regular_price} sale={row.original.sale_price} />
-            ),
-        },
-        {
-            accessorKey: 'stock',
-            header: 'Stock',
-            cell: ({ row }: any) => <StockBadge stock={row.original.stock} />,
-        },
-        {
-            accessorKey: 'category',
-            header: 'Category',
-            cell: ({ row }: any) => (
-                <span className="inline-block px-2 py-1 text-sm bg-[#80DEEA]/10 text-[#80DEEA] rounded-md ring-1 ring-slate-700/60">
-                    {row.original.category}
-                </span>
-            ),
-        },
-        {
-            accessorKey: 'rating',
-            header: 'Rating',
-            cell: ({ row }: any) => <StarRating rating={row.original.rating || 0} />,
-        },
+                ),
+            },
+            {
+                accessorKey: 'price',
+                header: 'Price',
+                cell: ({ row }: any) => (
+                    <PriceDisplay regular={row.original.regular_price} sale={row.original.sale_price} />
+                ),
+            },
+            {
+                accessorKey: 'stock',
+                header: 'Stock',
+                cell: ({ row }: any) => <StockBadge stock={row.original.stock} />,
+            },
+            {
+                accessorKey: 'category',
+                header: 'Category',
+                cell: ({ row }: any) => (
+                    <span className="inline-block px-2 py-1 text-sm bg-[#80DEEA]/10 text-[#80DEEA] rounded-md ring-1 ring-slate-700/60">
+                        {row.original.category}
+                    </span>
+                ),
+            },
+            {
+                accessorKey: 'rating',
+                header: 'Rating',
+                cell: ({ row }: any) => <StarRating rating={row.original.rating || 0} />,
+            },
         ]
 
         if (activeTab === 'deleted') {
@@ -248,51 +285,86 @@ const ProductList = () => {
 
         base.push({
             header: 'Actions',
-            cell: ({ row }: any) => (
-                <div className="flex items-center gap-0.5">
-                    <Link
-                        href={`/product/${row.original.id}`}
-                        title="View"
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-150"
-                    >
-                        <Eye size={15} />
-                    </Link>
-                    <Link
-                        href={`/product/edit/${row.original.id}`}
-                        title="Edit"
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all duration-150"
-                    >
-                        <Pencil size={15} />
-                    </Link>
-                    <button
-                        title="Analytics"
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
-                    >
-                        <BarChart2 size={15} />
-                    </button>
-                    {row.original.isDeleted ? (
+            cell: ({ row }: any) => {
+                const p = row.original
+                const archiving = archiveProductMutation.isPending && archiveProductMutation.variables === p.id
+                const unarchiving = unarchiveProductMutation.isPending && unarchiveProductMutation.variables === p.id
+
+                return (
+                    <div className="flex items-center gap-0.5">
+                        <Link
+                            href={`/product/${p.id}`}
+                            title="View"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-150"
+                        >
+                            <Eye size={15} />
+                        </Link>
+                        <Link
+                            href={`/product/edit/${p.id}`}
+                            title="Edit"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all duration-150"
+                        >
+                            <Pencil size={15} />
+                        </Link>
                         <button
-                            title="Restore"
+                            title="Analytics"
                             className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
-                            onClick={() => openConfirmDeleteModal(row.original)}
                         >
-                            <RotateCcw size={15} />
+                            <BarChart2 size={15} />
                         </button>
-                    ) : (
-                        <button
-                            title="Delete"
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
-                            onClick={() => openConfirmDeleteModal(row.original)}
-                        >
-                            <Trash2 size={15} />
-                        </button>
-                    )}
-                </div>
-            ),
+
+                        {p.isDeleted ? (
+                            <button
+                                title="Restore"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
+                                onClick={() => openConfirmDeleteModal(p)}
+                            >
+                                <RotateCcw size={15} />
+                            </button>
+                        ) : p.status === 'Archived' ? (
+                            <>
+                                <button
+                                    title="Unarchive"
+                                    disabled={unarchiving}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-[#80DEEA] hover:bg-[#80DEEA]/10 transition-all duration-150 disabled:opacity-40"
+                                    onClick={() => unarchiveProductMutation.mutate(p.id)}
+                                >
+                                    {unarchiving ? <Loader2 size={15} className="animate-spin" /> : <ArchiveRestore size={15} />}
+                                </button>
+                                <button
+                                    title="Move to trash"
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+                                    onClick={() => openConfirmDeleteModal(p)}
+                                >
+                                    <Trash2 size={15} />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    title="Archive"
+                                    disabled={archiving}
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all duration-150 disabled:opacity-40"
+                                    onClick={() => archiveProductMutation.mutate(p.id)}
+                                >
+                                    {archiving ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}
+                                </button>
+                                <button
+                                    title="Delete"
+                                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+                                    onClick={() => openConfirmDeleteModal(p)}
+                                >
+                                    <Trash2 size={15} />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )
+            },
         })
 
         return base
-    }, [activeTab])
+    }, [activeTab, archiveProductMutation.isPending, unarchiveProductMutation.isPending])
 
     const table = useReactTable({
         data: displayProducts,
@@ -310,9 +382,7 @@ const ProductList = () => {
         <div className="w-full min-h-screen p-4 sm:p-8 font-semibold">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
                 <div>
-                    <h2 className="text-2xl text-white font-Poppins">
-                        All Products
-                    </h2>
+                    <h2 className="text-2xl text-white font-Poppins">All Products</h2>
                     <div className="flex items-center text-sm text-slate-400 mt-1">
                         <Link href={"/dashboard"} className="text-[#80DEEA] hover:underline cursor-pointer">
                             Dashboard
@@ -329,8 +399,8 @@ const ProductList = () => {
                 </Link>
             </div>
 
-            {/* Tabs */}
             <div className="flex items-center gap-1 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-xl p-1 w-fit">
+                {/* Active */}
                 <button
                     onClick={() => { setActiveTab('active'); setGlobalFilter('') }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
@@ -351,6 +421,28 @@ const ProductList = () => {
                         </span>
                     )}
                 </button>
+
+                <button
+                    onClick={() => { setActiveTab('archived'); setGlobalFilter('') }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                        activeTab === 'archived'
+                            ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20'
+                            : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                    <Archive size={14} />
+                    Archived
+                    {!isLoading && !isError && archivedProducts.length > 0 && (
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+                            activeTab === 'archived'
+                                ? 'bg-amber-500/15 text-amber-400'
+                                : 'bg-slate-800 text-slate-500'
+                        }`}>
+                            {archivedProducts.length}
+                        </span>
+                    )}
+                </button>
+
                 <button
                     onClick={() => { setActiveTab('deleted'); setGlobalFilter('') }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
@@ -403,7 +495,6 @@ const ProductList = () => {
                 )}
             </div>
 
-            {/* Stats — active tab only */}
             {activeTab === 'active' && !isLoading && !isError && activeProducts.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                     {[
@@ -421,6 +512,15 @@ const ProductList = () => {
                             </p>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {activeTab === 'archived' && !isLoading && !isError && archivedProducts.length > 0 && (
+                <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/8 border border-amber-500/20 text-amber-300 text-sm">
+                    <Archive size={15} className="shrink-0" />
+                    <span>
+                        {archivedProducts.length} product{archivedProducts.length !== 1 ? 's' : ''} archived and hidden from your store
+                    </span>
                 </div>
             )}
 
@@ -442,8 +542,8 @@ const ProductList = () => {
                     <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/10 border border-orange-300/60 text-orange-300 text-sm">
                         <AlertCircle size={18} className="shrink-0 text-orange-300" />
                         <span>
-                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion,
-                            restore {deletedProducts.length === 1 ? 'it' : 'them'} under actions tab
+                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion —
+                            restore {deletedProducts.length === 1 ? 'it' : 'them'} under Actions before the deadline
                         </span>
                     </div>
                 )
@@ -452,7 +552,7 @@ const ProductList = () => {
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80">
                     <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                        {activeTab === 'active' ? 'Active Inventory' : 'Archived Products'}
+                        {activeTab === 'active' ? 'Active Inventory' : activeTab === 'archived' ? 'Archived Products' : 'Trash'}
                     </h3>
                     {!isLoading && !isError && globalFilter && (
                         <span className="text-xs text-slate-500">
@@ -480,6 +580,16 @@ const ProductList = () => {
                             <div className="text-center">
                                 <p className="font-semibold text-slate-300">Trash is empty</p>
                                 <p className="text-sm text-slate-500 mt-1">Deleted products will appear here</p>
+                            </div>
+                        </div>
+                    ) : activeTab === 'archived' ? (
+                        <div className="flex flex-col items-center justify-center py-24 gap-3">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center ring-1 ring-slate-700">
+                                <Archive size={28} className="text-slate-600" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-semibold text-slate-300">No archived products</p>
+                                <p className="text-sm text-slate-500 mt-1">Archived products are hidden from your store but never deleted</p>
                             </div>
                         </div>
                     ) : (
@@ -512,6 +622,8 @@ const ProductList = () => {
                         <div className="flex flex-col divide-y divide-slate-800/50 md:hidden">
                             {visibleRows.map((row) => {
                                 const p = row.original as any
+                                const archiving = archiveProductMutation.isPending && archiveProductMutation.variables === p.id
+                                const unarchiving = unarchiveProductMutation.isPending && unarchiveProductMutation.variables === p.id
                                 return (
                                     <div
                                         key={row.id}
@@ -528,23 +640,53 @@ const ProductList = () => {
                                                 >
                                                     {p.title}
                                                 </Link>
-                                                {p.isDeleted ? (
-                                                    <button
-                                                        title="Restore"
-                                                        onClick={() => openConfirmDeleteModal(p)}
-                                                        className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
-                                                    >
-                                                        <RotateCcw size={14} />
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        title="Delete"
-                                                        onClick={() => openConfirmDeleteModal(p)}
-                                                        className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                )}
+                                                <div className="flex items-center gap-0.5 shrink-0">
+                                                    {p.isDeleted ? (
+                                                        <button
+                                                            title="Restore"
+                                                            onClick={() => openConfirmDeleteModal(p)}
+                                                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                                                        >
+                                                            <RotateCcw size={14} />
+                                                        </button>
+                                                    ) : p.status === 'Archived' ? (
+                                                        <>
+                                                            <button
+                                                                title="Unarchive"
+                                                                disabled={unarchiving}
+                                                                onClick={() => unarchiveProductMutation.mutate(p.id)}
+                                                                className="p-1.5 rounded-lg text-slate-500 hover:text-[#80DEEA] hover:bg-[#80DEEA]/10 transition-all disabled:opacity-40"
+                                                            >
+                                                                {unarchiving ? <Loader2 size={14} className="animate-spin" /> : <ArchiveRestore size={14} />}
+                                                            </button>
+                                                            <button
+                                                                title="Move to trash"
+                                                                onClick={() => openConfirmDeleteModal(p)}
+                                                                className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                title="Archive"
+                                                                disabled={archiving}
+                                                                onClick={() => archiveProductMutation.mutate(p.id)}
+                                                                className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all disabled:opacity-40"
+                                                            >
+                                                                {archiving ? <Loader2 size={14} className="animate-spin" /> : <Archive size={14} />}
+                                                            </button>
+                                                            <button
+                                                                title="Delete"
+                                                                onClick={() => openConfirmDeleteModal(p)}
+                                                                className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <span className="text-[11px] px-2 py-0.5 bg-slate-800 text-slate-400 rounded font-medium ring-1 ring-slate-700/60">
@@ -594,10 +736,7 @@ const ProductList = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-800/40">
                                     {visibleRows.map((row) => (
-                                        <tr
-                                            key={row.id}
-                                            className="hover:bg-slate-800/25 transition group"
-                                        >
+                                        <tr key={row.id} className="hover:bg-slate-800/25 transition group">
                                             {row.getVisibleCells().map((cell) => (
                                                 <td key={cell.id} className="px-5 py-3.5 text-sm">
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
