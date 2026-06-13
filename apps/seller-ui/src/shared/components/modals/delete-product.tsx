@@ -56,22 +56,20 @@ const DeleteProductModal = ({ product, onClose, onConfirm, onRestore, isPending,
                             &quot;{product?.title}&quot;
                         </span>{' '}
                         {isDeleted
-                            ? 'is scheduled for permanent deletion.'
+                            ? 'is scheduled for permanent removal.'
                             : 'will be queued for deletion in 24 hours.'
                         }
                     </p>
 
                     {isDeleted && product?.deletedAt ? (
-                        isUrgent && (
-                            <div className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
-                                <span className="text-xs text-slate-400">
-                                    Restore by{' '}
-                                    <span className="font-semibold text-slate-300 tabular-nums">
-                                        {formatExpiry(product.deletedAt)}
-                                    </span>
+                        <div className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
+                            <span className="text-xs text-slate-400">
+                                Restore by{' '}
+                                <span className="font-semibold text-slate-300 tabular-nums">
+                                    {formatExpiry(product.deletedAt)}
                                 </span>
-                            </div>
-                        ) 
+                            </span>
+                        </div>
                     ) : !isDeleted ? (
                         <div className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
                             <span className="text-xs text-slate-400">

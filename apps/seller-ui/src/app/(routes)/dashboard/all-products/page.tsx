@@ -10,7 +10,6 @@ import toast from "react-hot-toast"
 import Image from "next/image"
 import Link from "next/link"
 
-
 const StarRating = ({ rating, max = 5 }: { rating: number; max?: number }) => {
     const stars = Array.from({ length: max }, (_, i) => ({
         index: i,
@@ -180,16 +179,16 @@ const ProductList = () => {
     }
 
     const activeProducts = useMemo(
-        () => products.filter((p: any) => !p.isDeleted && p.status !== 'Archived'),
+        () => products.filter((p: any) => p.status === 'Active'),
         [products]
     )
     const archivedProducts = useMemo(
-        () => products.filter((p: any) => p.status === 'Archived' && !p.isDeleted),
+        () => products.filter((p: any) => p.status === 'Archived'),
         [products]
     )
     const deletedProducts = useMemo(() =>
         products
-            .filter((p: any) => p.isDeleted && p.deletedAt && hoursUntilExpiry(p.deletedAt) > 0)
+            .filter((p: any) => p.status === 'Deleted' && p.deletedAt && hoursUntilExpiry(p.deletedAt) > 0)
             .sort((a: any, b: any) => new Date(a.deletedAt).getTime() - new Date(b.deletedAt).getTime()),
         [products]
     )
@@ -313,7 +312,8 @@ const ProductList = () => {
                             <BarChart2 size={15} />
                         </button>
 
-                        {p.isDeleted ? (
+                        {p.status === 'Deleted' ? (
+
                             <button
                                 title="Restore"
                                 className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-150"
@@ -322,6 +322,7 @@ const ProductList = () => {
                                 <RotateCcw size={15} />
                             </button>
                         ) : p.status === 'Archived' ? (
+
                             <>
                                 <button
                                     title="Unarchive"
@@ -340,6 +341,7 @@ const ProductList = () => {
                                 </button>
                             </>
                         ) : (
+
                             <>
                                 <button
                                     title="Archive"
@@ -399,8 +401,9 @@ const ProductList = () => {
                 </Link>
             </div>
 
+            {}
             <div className="flex items-center gap-1 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-xl p-1 w-fit">
-                {/* Active */}
+                {}
                 <button
                     onClick={() => { setActiveTab('active'); setGlobalFilter('') }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
@@ -422,6 +425,7 @@ const ProductList = () => {
                     )}
                 </button>
 
+                {}
                 <button
                     onClick={() => { setActiveTab('archived'); setGlobalFilter('') }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
@@ -443,6 +447,7 @@ const ProductList = () => {
                     )}
                 </button>
 
+                {}
                 <button
                     onClick={() => { setActiveTab('deleted'); setGlobalFilter('') }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
@@ -476,6 +481,7 @@ const ProductList = () => {
                 </button>
             </div>
 
+            {}
             <div className="mb-5 flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-[#80DEEA]/40 focus-within:ring-1 focus-within:ring-[#80DEEA]/10 transition-all duration-200">
                 <Search size={14} className="text-slate-500 shrink-0" />
                 <input
@@ -495,6 +501,7 @@ const ProductList = () => {
                 )}
             </div>
 
+            {}
             {activeTab === 'active' && !isLoading && !isError && activeProducts.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                     {[
@@ -515,35 +522,38 @@ const ProductList = () => {
                 </div>
             )}
 
+            {}
             {activeTab === 'archived' && !isLoading && !isError && archivedProducts.length > 0 && (
-                <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/8 border border-amber-500/20 text-amber-300 text-sm">
-                    <Archive size={15} className="shrink-0" />
+                <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400 text-sm">
+                    <Archive size={14} className="shrink-0" />
                     <span>
-                        {archivedProducts.length} product{archivedProducts.length !== 1 ? 's' : ''} archived and hidden from your store
+                        {archivedProducts.length} product{archivedProducts.length !== 1 ? 's' : ''} archived and hidden from your shop —
+                        restore {archivedProducts.length === 1 ? 'it' : 'them'} under Actions
                     </span>
                 </div>
             )}
 
+            {}
             {activeTab === 'deleted' && !isLoading && !isError && deletedProducts.length > 0 && (
                 urgentProducts.length > 0 ? (
-                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm">
-                        <AlertCircle size={18} className="shrink-0 text-red-400" />
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                        <AlertCircle size={15} className="shrink-0" />
                         <span>
-                            <span className="font-semibold text-red-400">
+                            <span className="font-semibold">
                                 {urgentProducts.length} product{urgentProducts.length !== 1 ? 's' : ''} expiring soon
                             </span>
                             {soonestExpiry && (
                                 <> — earliest on <span className="font-semibold tabular-nums">{formatExpiry(soonestExpiry.deletedAt)}</span></>
                             )}.{' '}
-                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal
+                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal.
                         </span>
                     </div>
                 ) : (
-                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/10 border border-orange-300/60 text-orange-300 text-sm">
-                        <AlertCircle size={18} className="shrink-0 text-orange-300" />
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/10 border border-red-600/20 text-red-400 text-sm">
+                        <RotateCcw size={14} className="shrink-0" />
                         <span>
-                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for deletion —
-                            restore {deletedProducts.length === 1 ? 'it' : 'them'} under Actions before the deadline
+                            {deletedProducts.length} product{deletedProducts.length !== 1 ? 's' : ''} scheduled for removal —
+                            restore {deletedProducts.length === 1 ? 'it' : 'them'} under Actions
                         </span>
                     </div>
                 )
@@ -589,7 +599,7 @@ const ProductList = () => {
                             </div>
                             <div className="text-center">
                                 <p className="font-semibold text-slate-300">No archived products</p>
-                                <p className="text-sm text-slate-500 mt-1">Archived products are hidden from your store but never deleted</p>
+                                <p className="text-sm text-slate-500 mt-1">Archived products are hidden from your shop</p>
                             </div>
                         </div>
                     ) : (
@@ -599,14 +609,17 @@ const ProductList = () => {
                             </div>
                             <div className="text-center">
                                 <p className="font-semibold text-slate-300">No products yet</p>
-                                <p className="text-sm text-slate-500 mt-1">Create your first product to get started</p>
+                                {archivedProducts.length > 0 ? (
+                                    <p className="text-sm text-slate-500 mt-1">Create or unarchive products to list them in your shop</p>
+                                ) : (
+                                    <Link
+                                        href="/dashboard/create-product"
+                                        className="mt-1 text-sm font-medium text-[#80DEEA] hover:text-[#58D9EB] transition"
+                                    >
+                                        Create your first product to get started
+                                    </Link>
+                                )}
                             </div>
-                            <Link
-                                href="/dashboard/create-product"
-                                className="mt-1 text-sm text-[#80DEEA] hover:underline font-medium"
-                            >
-                                Create Product
-                            </Link>
                         </div>
                     )
                 ) : visibleRows.length === 0 ? (
@@ -618,7 +631,7 @@ const ProductList = () => {
                     </div>
                 ) : (
                     <>
-                        {/* Mobile cards */}
+                        {}
                         <div className="flex flex-col divide-y divide-slate-800/50 md:hidden">
                             {visibleRows.map((row) => {
                                 const p = row.original as any
@@ -641,7 +654,7 @@ const ProductList = () => {
                                                     {p.title}
                                                 </Link>
                                                 <div className="flex items-center gap-0.5 shrink-0">
-                                                    {p.isDeleted ? (
+                                                    {p.status === 'Deleted' ? (
                                                         <button
                                                             title="Restore"
                                                             onClick={() => openConfirmDeleteModal(p)}
@@ -694,7 +707,7 @@ const ProductList = () => {
                                                 </span>
                                                 <StockBadge stock={p.stock} />
                                             </div>
-                                            {p.isDeleted && p.deletedAt && (() => {
+                                            {p.status === 'Deleted' && p.deletedAt && (() => {
                                                 const hours = hoursUntilExpiry(p.deletedAt)
                                                 const urgent = hours > 0 && hours < 12
                                                 return (
@@ -714,7 +727,7 @@ const ProductList = () => {
                             })}
                         </div>
 
-                        {/* Desktop table */}
+                        {}
                         <div className="hidden md:block w-full overflow-x-auto">
                             <table className="w-full">
                                 <thead>

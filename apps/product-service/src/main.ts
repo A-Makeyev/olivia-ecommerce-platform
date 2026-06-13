@@ -4,7 +4,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
 import router from './routes/product.router'
-// import './jobs/product-cron.job'
+import './jobs/product-cron.job'
 
 
 const swaggerDocument = require('./swagger-output.json')
