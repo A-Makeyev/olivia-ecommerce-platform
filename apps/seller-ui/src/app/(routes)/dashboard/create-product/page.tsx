@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -18,6 +18,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 
+
 interface UploadedImage {
     file_id: string
     url: string
@@ -26,7 +27,7 @@ interface UploadedImage {
 const Page = () => {
     const router = useRouter()
     const queryClient = useQueryClient()
-    
+
     const [loading, setLoading] = useState(false)
     const [isChanged, setIsChanged] = useState(true)
     const [isCodOpen, setIsCodOpen] = useState(false)
@@ -34,10 +35,13 @@ const Page = () => {
     const [displayImage, setDisplayImage] = useState('')
     const [selectedImage, setSelectedImage] = useState('')
     const [openImageModal, setOpenImageModal] = useState(false)
+    const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null)
     const [subCategoryTouched, setSubCategoryTouched] = useState(false)
     const [activeEffect, setActiveEffect] = useState<string | null>(null)
     const [images, setImages] = useState<(UploadedImage | null)[]>([null])
     const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+
+    const slugManuallyEdited = useRef(false)
 
     const {
         register,
@@ -71,12 +75,26 @@ const Page = () => {
 
     const categories = data?.categories || []
     const subCategories = data?.subCategories || {}
+    const watchedTitle = watch('title')
     const selectedCategory = watch('category')
     const regularPrice = watch('regular_price')
 
     const subCategoriesOptions = useMemo(() => {
         return selectedCategory ? subCategories[selectedCategory] || [] : []
     }, [selectedCategory, subCategories])
+
+    useEffect(() => {
+        if (slugManuallyEdited.current) return
+        if (!watchedTitle) return
+
+        const generated = watchedTitle
+            .replace(/[^a-zA-Z0-9\s]/g, '')
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/-{2,}/g, '-')
+
+        setValue('slug', generated)
+    }, [watchedTitle])
 
     const convertFileToBase64 = (file: File) => {
         return new Promise((resolve, reject) => {
@@ -88,14 +106,14 @@ const Page = () => {
     }
 
     const handleImageChange = async (file: File | null, index: number) => {
-        if (!file) return 
+        if (!file) return
 
         setUploadingIndex(index)
 
         try {
             const fileName = await convertFileToBase64(file)
             const res = await axiosInstance.post('/product/api/upload-product-image', { fileName })
-            
+
             const uploadedImage: UploadedImage = {
                 file_id: res.data.fileId,
                 url: res.data.file_url
@@ -122,12 +140,12 @@ const Page = () => {
     const handleImageRemove = async (index: number) => {
         try {
             const imageToDelete = images[index]
-            
+
             if (imageToDelete && typeof imageToDelete === 'object' && 'file_id' in imageToDelete) {
-                await axiosInstance.delete('/product/api/delete-product-image', { 
-                    data: { 
+                await axiosInstance.delete('/product/api/delete-product-image', {
+                    data: {
                         file_id: imageToDelete.file_id
-                    } 
+                    }
                 })
             }
 
@@ -168,7 +186,18 @@ const Page = () => {
 
             setSelectedImage(transformUrl)
             setDisplayImage(transformUrl)
-        } catch(err) {
+            if (selectedImageIndex !== null) {
+                setImages((prev) => {
+                    const updated = [...prev]
+                    const original = updated[selectedImageIndex]
+                    if (original) {
+                        updated[selectedImageIndex] = { ...original, url: transformUrl } as UploadedImage
+                    }
+                    setValue('images', updated)
+                    return updated
+                })
+            }
+        } catch (err) {
             toast.error('Failed to enhance. Please try again')
             console.log(err)
         } finally {
@@ -177,6 +206,8 @@ const Page = () => {
     }
 
     const handleSelectImage = (url: string) => {
+        const idx = images.findIndex((img) => img?.url === url)
+        setSelectedImageIndex(idx >= 0 ? idx : null)
         setSelectedImage(url)
         setDisplayImage(url)
         setActiveEffect(null)
@@ -203,9 +234,9 @@ const Page = () => {
     }
 
     return (
-        <form 
+        <form
             className="w-full mx-auto p-8 text-white shadow-lg rounded-lg"
-            onSubmit={handleSubmit(onSubmit)} 
+            onSubmit={handleSubmit(onSubmit)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
                     e.preventDefault()
@@ -242,7 +273,7 @@ const Page = () => {
                     >
                         {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
                     </button>
-                </div> 
+                </div>
             </div>
             <div className="flex flex-col md:flex-row w-full gap-6 py-4">
                 <div className="w-full md:w-[35%]">
@@ -446,22 +477,34 @@ const Page = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2 md:col-span-1">
-                            <Input
-                                required
-                                size="sm"
-                                label="Product URL (Slug)"
-                                icon={<Link2 size={20} />}
-                                error={errors.slug?.message as string}
-                                {...register('slug', {
+                            {(() => {
+                                const { onChange: slugOnChange, ...slugRegister } = register('slug', {
                                     required: 'Slug is required',
-                                    pattern: {
-                                        value: /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/,
-                                        message: 'Slug must be lowercase with letters, numbers, and hyphens'
-                                    },
                                     minLength: { value: 3, message: 'Slug must be at least 3 characters long' },
-                                    maxLength: { value: 50, message: 'Slug must be less than 50 characters long' }
-                                })}
-                            />
+                                    maxLength: { value: 50, message: 'Slug must be less than 50 characters long' },
+                                    validate: (value) => {
+                                        if (/\s/.test(value)) return 'Use hyphens instead of spaces e.g. "my-product"'
+                                        if (/--/.test(value)) return 'Slug cannot contain consecutive hyphens'
+                                        if (/^-|-$/.test(value)) return 'Slug cannot start or end with a hyphen'
+                                        if (!/^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/.test(value)) return 'Slug can only contain letters, numbers, and hyphens'
+                                        return true
+                                    }
+                                })
+                                return (
+                                    <Input
+                                        required
+                                        size="sm"
+                                        label="Product URL (Slug)"
+                                        icon={<Link2 size={20} />}
+                                        error={errors.slug?.message as string}
+                                        {...slugRegister}
+                                        onChange={(e) => {
+                                            slugManuallyEdited.current = true
+                                            slugOnChange(e)
+                                        }}
+                                    />
+                                )
+                            })()}
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <Input
@@ -607,7 +650,7 @@ const Page = () => {
             </div>
             {openImageModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="w-full max-w-2xl p-6 bg-slate-900 border border-slate-800 rounded-md">
+                    <div className="w-full max-w-2xl p-8 bg-slate-900 border border-slate-800 rounded-md">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold text-white flex items-center gap-2 font-Poppins">
                                 <Wand2 size={20} />

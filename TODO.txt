@@ -11,3 +11,4 @@ winget install --id Google.Antigravity --force
 
 [x] fix login at header & sub
 [x] create-product, make responsive
+[x] create ai details summary in create-product

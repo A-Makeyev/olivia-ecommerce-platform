@@ -545,7 +545,7 @@ const ProductList = () => {
                             {soonestExpiry && (
                                 <> — earliest on <span className="font-semibold tabular-nums">{formatExpiry(soonestExpiry.deletedAt)}</span></>
                             )}.{' '}
-                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal.
+                            Restore {urgentProducts.length === 1 ? 'it' : 'them'} before permanent removal
                         </span>
                     </div>
                 ) : (
@@ -562,7 +562,7 @@ const ProductList = () => {
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80">
                     <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                        {activeTab === 'active' ? 'Active Inventory' : activeTab === 'archived' ? 'Archived Products' : 'Trash'}
+                        {activeTab === 'active' ? 'Active Inventory' : activeTab === 'archived' ? 'Archived Products' : 'Deleted Products'}
                     </h3>
                     {!isLoading && !isError && globalFilter && (
                         <span className="text-xs text-slate-500">

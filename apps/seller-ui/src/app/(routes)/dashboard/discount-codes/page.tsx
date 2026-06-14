@@ -238,7 +238,7 @@ return (
         </div>
         {showModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="w-full max-w-[450px] p-6 bg-slate-900 border border-slate-800 rounded-md">
+                <div className="w-full max-w-[450px] p-8 bg-slate-900 border border-slate-800 rounded-md">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white font-Poppins">New Discount Code</h3>
                         <button
