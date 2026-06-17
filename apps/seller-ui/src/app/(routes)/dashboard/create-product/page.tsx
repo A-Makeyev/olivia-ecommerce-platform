@@ -18,7 +18,6 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 
-
 interface UploadedImage {
     file_id: string
     url: string
@@ -50,7 +49,7 @@ const Page = () => {
         setValue,
         handleSubmit,
         formState: { errors }
-    } = useForm()
+    } = useForm({ mode: 'onChange' })
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ['categories'],
@@ -87,13 +86,21 @@ const Page = () => {
         if (slugManuallyEdited.current) return
         if (!watchedTitle) return
 
-        const generated = watchedTitle
+        let generated = watchedTitle
             .replace(/[^a-zA-Z0-9\s]/g, '')
             .trim()
             .replace(/\s+/g, '-')
             .replace(/-{2,}/g, '-')
 
-        setValue('slug', generated)
+        if (generated.length > 50) {
+            generated = generated.slice(0, 50)
+            const lastHyphen = generated.lastIndexOf('-')
+            if (lastHyphen > 0) {
+                generated = generated.slice(0, lastHyphen)
+            }
+        }
+
+        setValue('slug', generated, { shouldValidate: true })
     }, [watchedTitle])
 
     const convertFileToBase64 = (file: File) => {
@@ -268,7 +275,7 @@ const Page = () => {
                     )}
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || Object.keys(errors).length > 0}
                         className="w-[84px] h-[40px] flex items-center justify-center text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
                     >
                         {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
@@ -533,7 +540,7 @@ const Page = () => {
                                 required: 'Product description is required',
                                 validate: (value) => {
                                     const words = value.trim().split(/\s+/).length
-                                    return words <= 150 || `Description must be less than 150 words. Current: ${words}`
+                                    return words <= 400 || `Description must be less than 400 words. Current: ${words}`
                                 }
                             })}
                         />
@@ -550,7 +557,7 @@ const Page = () => {
                                     required: 'Details are required',
                                     validate: (value) => {
                                         const words = value?.split(/\s+/).filter((word: string) => word).length
-                                        return words <= 100 || `Details must be less than 100 words. Current: ${words}`
+                                        return words <= 300 || `Details must be less than 300 words. Current: ${words}`
                                     }
                                 }}
                                 render={({ field }) => (

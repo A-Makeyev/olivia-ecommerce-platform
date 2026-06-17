@@ -40,7 +40,7 @@ const StarRating = ({ rating, max = 5 }: { rating: number; max?: number }) => {
                 </span>
             ))}
             <span className="ml-1.5 text-xs font-semibold text-slate-400 tabular-nums">
-                {rating > 0 ? rating.toFixed(1) : '—'}
+                {rating > 0 ? parseFloat(rating.toFixed(1)).toString() : '0'}
             </span>
         </div>
     )
