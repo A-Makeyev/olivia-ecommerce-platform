@@ -41,16 +41,18 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
             w-full ${isSm ? 'p-2' : isLg ? 'p-5' : 'p-3.5'} outline-0
             rounded-lg border transition-all duration-300 ease-out bg-transparent
             ${isSm ? 'text-sm' : isLg ? 'text-xl' : 'text-lg'} text-white peer placeholder-transparent
+            disabled:opacity-100
         `
 
         const selectBaseStyle =
         `
             ${icon ? (isSm ? 'pl-9' : isLg ? 'pl-14' : 'pl-11') : (isSm ? 'pl-3' : isLg ? 'pl-6' : 'pl-4')}
-            ${error ? 'border-red-500' : 'border-slate-400 focus:border-[#80DEEA]'}
-            ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+            ${error ? 'border-red-500 disabled:border-red-500' : 'border-slate-400 disabled:border-slate-400 focus:border-[#80DEEA]'}
+            ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
             w-full ${isSm ? 'py-1.5 min-h-[34px]' : isLg ? 'py-5 min-h-[64px]' : 'py-3.5 min-h-[52px]'} pr-10 outline-0
             appearance-none rounded-lg border transition-all duration-300 ease-out bg-transparent
             ${isSm ? 'text-sm' : isLg ? 'text-xl' : 'text-lg'} text-white relative z-20
+            disabled:opacity-100 disabled:bg-transparent disabled:text-white
         `
 
         const labelStyle =

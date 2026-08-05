@@ -48,7 +48,7 @@ const Page = () => {
         watch,
         setValue,
         handleSubmit,
-        formState: { errors }
+        formState: { errors, isValid }
     } = useForm({ mode: 'onChange' })
 
     const { data, isLoading, isError } = useQuery({
@@ -275,7 +275,7 @@ const Page = () => {
                     )}
                     <button
                         type="submit"
-                        disabled={loading || Object.keys(errors).length > 0}
+                        disabled={loading || !isValid}
                         className="w-[84px] h-[40px] flex items-center justify-center text-sm font-semibold text-slate-950 bg-[#80DEEA] hover:bg-[#4dd0e1] rounded-lg transition disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
                     >
                         {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
@@ -556,12 +556,13 @@ const Page = () => {
                                 rules={{
                                     required: 'Details are required',
                                     validate: (value) => {
-                                        const words = value?.split(/\s+/).filter((word: string) => word).length
-                                        return words <= 300 || `Details must be less than 300 words. Current: ${words}`
+                                        const text = (value?.replace(/<[^>]*>/g, '') || '').trim();
+                                        const words = text.split(/\s+/).filter(Boolean).length;
+                                        return words <= 300 || `Details must be less than 300 words. Current: ${words}`;
                                     }
                                 }}
                                 render={({ field }) => (
-                                    <RichTextEditor value={field.value} onChange={field.onChange} />
+                                    <RichTextEditor value={field.value} onChange={field.onChange} error={!!errors.detailed_description} />
                                 )}
                             />
                             {errors.detailed_description && (
@@ -588,6 +589,7 @@ const Page = () => {
                                         size="sm"
                                         icon={<DollarSign size={14} />}
                                         defaultValue="yes"
+                                        error={errors.cash_on_delivery?.message as string}
                                         {...(() => {
                                             const { onBlur, ...rest } = register('cash_on_delivery') as any
                                             return {

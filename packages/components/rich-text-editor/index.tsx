@@ -6,9 +6,11 @@ import ReactQuill from "react-quill-new"
 const RichTextEditor = ({
   value,
   onChange,
+  error,
 }: {
   value: string
   onChange: (content: string) => void
+  error?: boolean
 }) => {
   const [editorValue, setEditorValue] = useState(value || "") // Single state
   const quillRef = useRef(false)
@@ -30,7 +32,7 @@ const RichTextEditor = ({
   }, [])
 
   return (
-    <div className="relative">
+    <div className={`relative ${error ? 'quill-error' : ''}`}>
       <ReactQuill
         theme="snow"
         value={editorValue}
@@ -55,7 +57,7 @@ const RichTextEditor = ({
           ],
         }}
         placeholder="Product Details..."
-        className="bg-transparent border border-gray-700 text-white rounded-md"
+        className={`bg-transparent border ${error ? 'border-red-500' : 'border-gray-700'} text-white rounded-md`}
         style={{ minHeight: "250px" }}
       />
       <style>
@@ -136,6 +138,15 @@ const RichTextEditor = ({
           }
           .ql-snow {
             border-color: #444 !important;
+          }
+          .quill-error .ql-toolbar {
+            border-color: #ef4444 !important;
+          }
+          .quill-error .ql-container {
+            border-color: #ef4444 !important;
+          }
+          .quill-error .ql-snow {
+            border-color: #ef4444 !important;
           }
           .ql-editor.ql-blank::before {
             color: #aaa !important;
