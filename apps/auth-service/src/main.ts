@@ -29,13 +29,16 @@ app.get('/health', async (req, res) => {
     const redisConnected = await pingRedis()
     const isHealthy = dbConnected && redisConnected
 
-    res.status(isHealthy ? 200 : 503).json({
+    const healthStatus = {
         status: isHealthy ? 'UP' : 'DOWN',
         database: dbConnected ? 'connected' : 'disconnected',
         redis: redisConnected ? 'connected' : 'disconnected',
         timestamp: new Date().toISOString()
-    });
-});
+    }
+
+    res.status(isHealthy ? 200 : 503).json(healthStatus)
+    console.log('[HEALTH CHECK]', healthStatus)
+})
 
 // Documentation
 
