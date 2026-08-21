@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
+import dynamic from "next/dynamic"
 import "react-quill-new/dist/quill.snow.css"
-import ReactQuill from "react-quill-new"
 
+const ReactQuill = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+  loading: () => <div className="min-h-[250px] bg-transparent border border-gray-700 rounded-md p-4 text-gray-400">Loading editor...</div>,
+})
 
 const RichTextEditor = ({
   value,
@@ -16,17 +20,19 @@ const RichTextEditor = ({
   const quillRef = useRef(false)
 
   useEffect(() => {
-    if (!quillRef.current) {
+    if (typeof window !== "undefined" && !quillRef.current) {
       quillRef.current = true // Mark as mounted
 
       setTimeout(() => {
-        document
-          .querySelectorAll(".ql-toolbar")
-          .forEach((toolbar, index) => {
-            if (index > 0) {
-              toolbar.remove() // Remove extra toolbars
-            }
-          })
+        if (typeof document !== "undefined") {
+          document
+            .querySelectorAll(".ql-toolbar")
+            .forEach((toolbar, index) => {
+              if (index > 0) {
+                toolbar.remove() // Remove extra toolbars
+              }
+            })
+        }
       }, 100) // Short delay ensures Quill is fully initialized
     }
   }, [])

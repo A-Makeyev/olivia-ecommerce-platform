@@ -1,5 +1,6 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
@@ -185,6 +186,10 @@ const Page = () => {
             const transformUrl = `${baseUrl}?tr=${transformation}`
 
             await new Promise<void>((resolve, reject) => {
+                if (typeof window === 'undefined') {
+                    resolve()
+                    return
+                }
                 const img = new window.Image()
                 img.src = transformUrl
                 img.onload = () => resolve()
