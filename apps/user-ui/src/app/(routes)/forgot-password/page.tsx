@@ -143,9 +143,9 @@ const ForgotPassword = () => {
         resetPasswordMutation.mutate({ password })
     }
 
-    const onSubmit = (data: FormData) => {
-        console.log(data)
-    }
+    // const onSubmit = (data: FormData) => {
+    //     console.log(data)
+    // }
 
     return (
         <div className="w-full py-10 min-h-[85vh] bg-[#F1F1F1]">
