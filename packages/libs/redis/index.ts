@@ -17,4 +17,18 @@ redis.on('error', (err) => {
 })
 
 export const disconnect = () => redis.quit()
+
+export const pingRedis = async (timeoutMs = 2000): Promise<boolean> => {
+    try {
+        const pingPromise = redis.ping()
+        const timeoutPromise = new Promise<string>((_, reject) =>
+            setTimeout(() => reject(new Error('Redis ping timeout')), timeoutMs)
+        )
+        const res = await Promise.race([pingPromise, timeoutPromise])
+        return res === 'PONG'
+    } catch {
+        return false
+    }
+}
+
 export default redis

@@ -5,6 +5,7 @@ import router from './routes/auth.router'
 import swaggerUi from 'swagger-ui-express'
 import { errorMiddleware } from '@packages/error-handler/error-middleware'
 import { connectToDatabase, isDbConnected } from './utils/db-connection'
+import { pingRedis } from '@packages/libs/redis'
 
 
 const swaggerDocument = require('./swagger-output.json')
@@ -23,11 +24,15 @@ app.get('/', (req, res) => {
     res.send({ 'message': 'Hello API'})
 })
 
-app.get('/health', (req, res) => {
-    const dbStatus = isDbConnected() ? 'connected' : 'disconnected'
-    res.status(isDbConnected() ? 200 : 503).json({
-        status: 'UP',
-        database: dbStatus,
+app.get('/health', async (req, res) => {
+    const dbConnected = isDbConnected()
+    const redisConnected = await pingRedis()
+    const isHealthy = dbConnected && redisConnected
+
+    res.status(isHealthy ? 200 : 503).json({
+        status: isHealthy ? 'UP' : 'DOWN',
+        database: dbConnected ? 'connected' : 'disconnected',
+        redis: redisConnected ? 'connected' : 'disconnected',
         timestamp: new Date().toISOString()
     });
 });
