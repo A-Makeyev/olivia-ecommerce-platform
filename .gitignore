@@ -1,5 +1,12 @@
 # env
 .env
+.env*.local
+
+# Allow public UI app default .env files to be tracked in Git
+!apps/seller-ui/.env
+!apps/seller-ui/.env.production
+!apps/user-ui/.env
+!apps/user-ui/.env.production
 
 # compiled output
 dist

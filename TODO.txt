@@ -8,6 +8,7 @@ Redis -> https://upstash.com
 
 winget install --id Google.Antigravity --force
 
+build for deployment -> npm install && npx nx run-many --target=build --all --prod
 
 [x] fix login at header & sub
 [x] create-product, make responsive
