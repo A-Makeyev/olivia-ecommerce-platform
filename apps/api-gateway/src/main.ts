@@ -12,7 +12,7 @@ import initializeSiteConfig from './libs/InitializeSiteConfig'
 const app = express()
 
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: true,
   allowedHeaders: ['Authorization', 'Content-Type'],
   credentials: true,
 }))
@@ -41,7 +41,7 @@ app.get('/gateway-health', (req, res) => {
 app.use('/product', proxy('http://localhost:6002'))
 app.use('/', proxy('http://localhost:6001'))
 
-const port = process.env.PORT || 8080
+const port = process.env.GATEWAY_PORT || 8080
 const server = app.listen(port, () => {
   try {
     initializeSiteConfig()
