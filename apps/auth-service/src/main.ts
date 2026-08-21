@@ -55,7 +55,7 @@ app.use(errorMiddleware)
 const startServer = async () => {
     await connectToDatabase()
 
-    const port = process.env.PORT || 6001
+    const port = process.env.AUTH_PORT || 6001
     const server = app.listen(port, () => {
         console.log(`>>> Auth service is running on http://localhost:${port}/api`)
         console.log(`>>> Auth docs available at http://localhost:${port}/api-docs`)

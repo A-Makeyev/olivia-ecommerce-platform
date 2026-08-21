@@ -32,7 +32,7 @@ app.use('/docs-json', (req, res) => {
 app.use('/api', router)
 app.use(errorMiddleware)
 
-const port = process.env.PORT || 6002
+const port = process.env.PRODUCT_PORT || 6002
 const server = app.listen(port, () => {
   console.log(`>>> Product service is running on http://localhost:${port}/api`)
   console.log(`>>> Product docs available at http://localhost:${port}/api-docs`)
